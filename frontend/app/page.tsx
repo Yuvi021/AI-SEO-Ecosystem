@@ -4,8 +4,11 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ThemeToggle from './components/ThemeToggle';
+import Image from 'next/image';
+import { useAuth } from './contexts/AuthContext';
 
 export default function Home() {
+  const { isAuthenticated, user, logout } = useAuth();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -200,7 +203,7 @@ export default function Home() {
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <motion.div 
-                  className="w-12 h-12 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-2xl shadow-lg"
+                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg overflow-hidden bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 p-2"
                   animate={{ 
                     boxShadow: [
                       "0 10px 25px -5px rgba(59, 130, 246, 0.3)",
@@ -214,7 +217,7 @@ export default function Home() {
                     ease: "easeInOut"
                   }}
                 >
-                  🤖
+                  <Image src="/logo.svg" alt="AI SEO Ecosystem" width={64} height={64} className="w-full h-full object-contain" />
                 </motion.div>
                 <motion.div 
                   className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"
@@ -243,17 +246,57 @@ export default function Home() {
             </motion.div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/analyze"
-                  className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-                >
-                  Get Started
-                </Link>
-              </motion.div>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {user?.email}
+                  </span>
+                  <motion.button
+                    onClick={logout}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-2.5 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                  >
+                    Sign Out
+                  </motion.button>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      href="/analyze"
+                      className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                    >
+                      Dashboard
+                    </Link>
+                  </motion.div>
+                </>
+              ) : (
+                <>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      href="/login"
+                      className="px-6 py-2.5 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                    >
+                      Sign In
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      href="/analyze"
+                      className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                    >
+                      Get Started
+                    </Link>
+                  </motion.div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -634,8 +677,8 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-xl">
-                🤖
+              <div className="w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 p-1.5">
+                <Image src="/logo.svg" alt="AI SEO Ecosystem" width={56} height={56} className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="text-lg font-semibold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">

@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/api';
+// API URL - matches backend server port
+const API_URL = 'http://localhost:3001/api';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const analyzeBtn = document.getElementById('analyzeBtn');
@@ -67,10 +68,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  viewReportBtn.addEventListener('click', () => {
-    chrome.tabs.create({
-      url: chrome.runtime.getURL('report.html')
-    });
+  viewReportBtn.addEventListener('click', async () => {
+    // Open full report in new tab
+    const cached = await chrome.storage.local.get(['lastAnalysis']);
+    if (cached.lastAnalysis) {
+      // Create a data URL with the report HTML
+      const reportHTML = generateReportHTML(cached.lastAnalysis, currentUrl);
+      const blob = new Blob([reportHTML], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      chrome.tabs.create({ url });
+    } else {
+      // Fallback: open analyze page
+      chrome.tabs.create({
+        url: `http://localhost:3000/analyze?url=${encodeURIComponent(currentUrl)}`
+      });
+    }
   });
 
   function displayResults(results) {
@@ -132,6 +144,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (score >= 60) return 'Fair';
     if (score >= 40) return 'Needs Improvement';
     return 'Poor';
+  }
+
+  function generateReportHTML(data, url) {
+    const score = data.report?.score || data.validation?.quality?.score || 0;
+    const recommendations = aggregateRecommendations(data);
+    
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO Report - ${url}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 { color: #667eea; margin-bottom: 10px; }
+    .url { color: #666; margin-bottom: 30px; word-break: break-all; }
+    .score-display {
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .score { font-size: 72px; font-weight: bold; }
+    .recommendations { margin-top: 30px; }
+    .recommendation {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .recommendation.critical { background: #fee; border-color: #dc3545; }
+    .recommendation.high { background: #fff3cd; border-color: #fd7e14; }
+    .recommendation.medium { background: #fffbf0; border-color: #ffc107; }
+    .recommendation.low { background: #d4edda; border-color: #28a745; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 SEO Analysis Report</h1>
+    <div class="url">${url}</div>
+    <div class="score-display">
+      <div style="font-size: 18px; opacity: 0.9;">SEO Score</div>
+      <div class="score">${score}</div>
+      <div style="font-size: 16px; opacity: 0.9; margin-top: 10px;">${getScoreLabel(score)}</div>
+    </div>
+    <div class="recommendations">
+      <h2>Recommendations</h2>
+      ${recommendations.map(rec => `
+        <div class="recommendation ${rec.priority}">
+          <strong>${rec.message}</strong>
+          <div style="margin-top: 5px; font-size: 14px; opacity: 0.8;">${rec.impact || ''}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
+  // Check backend connection on load
+  async function checkBackendConnection() {
+    try {
+      const response = await fetch(`${API_URL.replace('/api', '')}/health`);
+      if (response.ok) {
+        return true;
+      }
+    } catch (error) {
+      console.error('Backend connection check failed:', error);
+    }
+    return false;
+  }
+
+  // Show connection status
+  const isConnected = await checkBackendConnection();
+  if (!isConnected) {
+    statusDiv.style.display = 'block';
+    statusDiv.className = 'status error';
+    statusDiv.textContent = '⚠️ Backend not connected. Please start the backend server.';
+    analyzeBtn.disabled = true;
   }
 });
 

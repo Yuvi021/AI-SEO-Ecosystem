@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import AgentSelection from '../components/AgentSelection';
 import ProgressSection from '../components/ProgressSection';
 import ResultsSection from '../components/ResultsSection';
 import SEODashboard from '../components/SEODashboard';
 import ThemeToggle from '../components/ThemeToggle';
+import ProtectedRoute from '../components/ProtectedRoute';
 import { AGENTS, API_URL } from '../lib/constants';
 
-export default function AnalyzePage() {
+function AnalyzePageContent() {
   const [url, setUrl] = useState('');
   const [selectedAgents, setSelectedAgents] = useState<string[]>(
     AGENTS.map(agent => agent.id)
@@ -276,11 +278,11 @@ export default function AnalyzePage() {
             >
               <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
                 <motion.div 
-                  className="w-10 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-xl shadow-lg"
+                  className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg overflow-hidden bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 p-2"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  🤖
+                  <Image src="/logo.svg" alt="AI SEO Ecosystem" width={56} height={56} className="w-full h-full object-contain" />
                 </motion.div>
                 <div>
                   <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
@@ -698,8 +700,8 @@ export default function AnalyzePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-lg">
-                🤖
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 p-1.5">
+                <Image src="/logo.svg" alt="AI SEO Ecosystem" width={48} height={48} className="w-full h-full object-contain" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">AI SEO Ecosystem</p>
@@ -719,5 +721,13 @@ export default function AnalyzePage() {
         </div>
       </motion.footer>
     </div>
+  );
+}
+
+export default function AnalyzePage() {
+  return (
+    <ProtectedRoute>
+      <AnalyzePageContent />
+    </ProtectedRoute>
   );
 }
