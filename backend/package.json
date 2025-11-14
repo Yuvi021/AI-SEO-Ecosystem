@@ -1,0 +1,39 @@
+{
+  "name": "ai-seo-ecosystem-backend",
+  "version": "1.0.0",
+  "description": "AI Multi-Agent SEO Ecosystem - Backend Server",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "seo",
+    "ai",
+    "agents",
+    "automation",
+    "optimization",
+    "backend"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.6.2",
+    "jsdom": "^23.0.1",
+    "lighthouse": "^11.4.0",
+    "sharp": "^0.33.1",
+    "chromium": "^3.0.3",
+    "puppeteer-core": "^21.5.2",
+    "pdf-lib": "^1.17.1",
+    "openai": "^4.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
+

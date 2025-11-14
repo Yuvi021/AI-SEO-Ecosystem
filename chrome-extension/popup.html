@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI SEO Ecosystem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 400px;
+            min-height: 500px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .score-display {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .score-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .button {
+            width: 100%;
+            padding: 12px 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .button:active {
+            transform: translateY(0);
+        }
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .status.loading {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .status.error {
+            background: rgba(220, 53, 69, 0.8);
+        }
+        .status.success {
+            background: rgba(40, 167, 69, 0.8);
+        }
+        .recommendations {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .recommendation {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            border-left: 3px solid white;
+        }
+        .recommendation.critical {
+            border-left-color: #dc3545;
+        }
+        .recommendation.high {
+            border-left-color: #fd7e14;
+        }
+        .recommendation.medium {
+            border-left-color: #ffc107;
+        }
+        .recommendation.low {
+            border-left-color: #28a745;
+        }
+        .recommendation-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .recommendation-impact {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .url-display {
+            font-size: 12px;
+            opacity: 0.8;
+            word-break: break-all;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 AI SEO Ecosystem</h1>
+            <p>Real-time SEO Analysis</p>
+        </div>
+        
+        <div id="urlDisplay" class="url-display">Loading current page...</div>
+        
+        <div class="score-display" id="scoreDisplay" style="display: none;">
+            <div class="score-label">SEO Score</div>
+            <div class="score" id="scoreValue">-</div>
+            <div class="score-label" id="scoreStatus">Click "Analyze Page" to start</div>
+        </div>
+        
+        <button id="analyzeBtn" class="button">Analyze Current Page</button>
+        <button id="viewReportBtn" class="button" style="display: none;">View Full Report</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="recommendations" class="recommendations" style="display: none;">
+            <h3 style="margin-bottom: 15px; font-size: 16px;">Top Recommendations</h3>
+            <div id="recommendationsList"></div>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>
+
