@@ -56,12 +56,12 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
   const totalResults = Object.values(results).reduce((sum, agentResults) => sum + Object.keys(agentResults).length, 0);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-orange-100 dark:border-orange-900/50 overflow-hidden transition-colors">
+    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 overflow-hidden transition-colors">
       <div className="p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h3 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2 mb-1">
-              <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Analysis Results
@@ -71,7 +71,7 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
           <div className="flex gap-2">
             <button
               onClick={expandAll}
-              className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
             >
               Expand All
             </button>
@@ -90,10 +90,10 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
               {Object.keys(results).length > 1 && (
                 <div className="mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
-                    <span className="text-orange-600 dark:text-orange-400 break-all">{url}</span>
+                    <span className="text-cyan-600 dark:text-cyan-400 break-all">{url}</span>
                   </h4>
                 </div>
               )}
@@ -107,7 +107,7 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
                   return (
                     <div
                       key={cardId}
-                      className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-orange-100 dark:border-orange-900/50 overflow-hidden hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all"
+                      className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-cyan-100 dark:border-cyan-900/50 overflow-hidden hover:shadow-md hover:border-cyan-200 dark:hover:border-cyan-800 transition-all"
                     >
                       <div
                         className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
@@ -115,7 +115,7 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center text-xl">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center text-xl">
                               {icon}
                             </div>
                             <div className="flex-1 min-w-0">

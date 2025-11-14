@@ -3,11 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --gradient-start: #667eea;
-  --gradient-end: #764ba2;
-  --primary: #667eea;
-  --primary-dark: #5568d3;
-  --secondary: #764ba2;
+  --gradient-start: #06b6d4;
+  --gradient-end: #8b5cf6;
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --secondary: #8b5cf6;
+  --cyan: #06b6d4;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
 }
 
 * {

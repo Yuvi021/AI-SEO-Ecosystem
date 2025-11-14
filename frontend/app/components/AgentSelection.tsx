@@ -64,7 +64,7 @@ export default function AgentSelection({
           <button
             onClick={handleSelectAll}
             disabled={disabled || selectedCount === totalCount}
-            className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Select All
           </button>
@@ -91,8 +91,8 @@ export default function AgentSelection({
               className={`
                 relative p-4 rounded-xl border-2 transition-all cursor-pointer
                 ${isSelected
-                  ? 'border-orange-500 dark:border-orange-600 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 shadow-md'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm'
+                  ? 'border-cyan-500 dark:border-cyan-600 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 shadow-md'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-sm'
                 }
                 ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
               `}
@@ -100,7 +100,7 @@ export default function AgentSelection({
               <div className="flex items-start gap-3">
                 <div className={`
                   flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl
-                  ${isSelected ? 'bg-orange-100 dark:bg-orange-900/50' : 'bg-gray-100 dark:bg-gray-700'}
+                  ${isSelected ? 'bg-cyan-100 dark:bg-cyan-900/50' : 'bg-gray-100 dark:bg-gray-700'}
                 `}>
                   {icon}
                 </div>
@@ -108,7 +108,7 @@ export default function AgentSelection({
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-semibold text-gray-800 dark:text-white text-sm">{agent.name}</h4>
                     {isRequired && (
-                      <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 text-xs font-medium rounded">
+                      <span className="px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300 text-xs font-medium rounded">
                         Required
                       </span>
                     )}
@@ -119,7 +119,7 @@ export default function AgentSelection({
                   <div className={`
                     relative w-6 h-6 rounded border-2 flex items-center justify-center transition-all
                     ${isSelected 
-                      ? 'border-orange-600 dark:border-orange-500 bg-orange-600 dark:bg-orange-500' 
+                      ? 'border-cyan-600 dark:border-cyan-500 bg-cyan-600 dark:bg-cyan-500' 
                       : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'
                     }
                     ${disabled && isRequired ? 'opacity-50' : ''}

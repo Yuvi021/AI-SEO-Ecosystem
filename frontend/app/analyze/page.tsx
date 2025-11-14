@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import AgentSelection from '../components/AgentSelection';
 import ProgressSection from '../components/ProgressSection';
 import ResultsSection from '../components/ResultsSection';
@@ -22,7 +23,17 @@ export default function AnalyzePage() {
     timestamp: string;
   }>>([]);
   const [results, setResults] = useState<Record<string, any>>({});
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const isSitemapURL = (url: string) => {
     return url.toLowerCase().includes('sitemap') || 
@@ -160,57 +171,158 @@ export default function AnalyzePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden">
+      {/* Enhanced Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div 
+          className="absolute w-96 h-96 bg-cyan-400/10 dark:bg-cyan-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
+          animate={{ 
+            x: [0, 50, 0],
+            y: [0, -50, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          style={{
+            left: `${mousePosition.x / 20}px`,
+            top: `${mousePosition.y / 20}px`,
+          }}
+        ></motion.div>
+        <motion.div 
+          className="absolute w-96 h-96 bg-blue-500/10 dark:bg-blue-600/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
+          animate={{ 
+            x: [0, -50, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          style={{
+            right: `${mousePosition.x / 25}px`,
+            bottom: `${mousePosition.y / 25}px`,
+          }}
+        ></motion.div>
+        <motion.div 
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 dark:bg-purple-600/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
+          animate={{ 
+            x: [0, 30, 0],
+            y: [0, 30, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 4
+          }}
+        ></motion.div>
+      </div>
+
+      {/* AI Grid Pattern Overlay */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#3b82f612_1px,transparent_1px),linear-gradient(to_bottom,#3b82f612_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#60a5fa08_1px,transparent_1px),linear-gradient(to_bottom,#60a5fa08_1px,transparent_1px)] pointer-events-none z-0"></div>
+
       {/* Header */}
-      <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-orange-100/50 dark:border-orange-900/30 sticky top-0 z-50 shadow-sm">
+      <motion.header 
+        className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-cyan-100/50 dark:border-cyan-900/30 sticky top-0 z-50 shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 15 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition-transform">
-                🤖
-              </div>
-              <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-700 dark:from-orange-400 dark:to-orange-600 bg-clip-text text-transparent">
-                  AI SEO Ecosystem
-                </span>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Analysis Dashboard</p>
-              </div>
-            </Link>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+                <motion.div 
+                  className="w-10 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-xl shadow-lg"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  🤖
+                </motion.div>
+                <div>
+                  <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                    AI SEO Ecosystem
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Analysis Dashboard</p>
+                </div>
+              </Link>
+            </motion.div>
             <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <motion.div 
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <motion.div 
+                  className="w-2 h-2 bg-green-500 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [1, 0.8, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                ></motion.div>
                 <span className="text-xs font-medium text-green-700 dark:text-green-400">System Ready</span>
-              </div>
+              </motion.div>
               <ThemeToggle />
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Page Header */}
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
             SEO Analysis
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Enter a URL or sitemap to analyze with AI-powered agents
           </p>
-        </div>
+        </motion.div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Input & Agents */}
           <div className="lg:col-span-2 space-y-6">
             {/* URL Input Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl">
+            <motion.div 
+              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              whileHover={{ scale: 1.01 }}
+            >
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <motion.div 
+                    className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-100 to-blue-200 dark:from-cyan-900/30 dark:to-blue-800/30 flex items-center justify-center"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <svg className="w-5 h-5 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
-                  </div>
+                  </motion.div>
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Website URL</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Enter URL or sitemap to analyze</p>
@@ -225,7 +337,7 @@ export default function AnalyzePage() {
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       placeholder="https://example.com or https://example.com/sitemap.xml"
-                      className="w-full px-4 py-3.5 pl-12 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700/50 dark:text-white rounded-xl focus:outline-none focus:border-orange-500 dark:focus:border-orange-400 focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-900/30 text-base transition-all"
+                      className="w-full px-4 py-3.5 pl-12 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700/50 dark:text-white rounded-xl focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 dark:focus:ring-cyan-900/30 text-base transition-all"
                       disabled={isAnalyzing}
                       onKeyPress={(e) => e.key === 'Enter' && !isAnalyzing && handleStartAnalysis()}
                     />
@@ -246,10 +358,12 @@ export default function AnalyzePage() {
                     )}
                   </div>
                   
-                  <button
+                  <motion.button
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing || !url.trim()}
-                    className="w-full px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 text-white rounded-xl font-semibold hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 text-white rounded-xl font-semibold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    whileHover={{ scale: isAnalyzing || !url.trim() ? 1 : 1.02, y: isAnalyzing || !url.trim() ? 0 : -2 }}
+                    whileTap={{ scale: isAnalyzing || !url.trim() ? 1 : 0.98 }}
                   >
                     {isAnalyzing ? (
                       <>
@@ -267,13 +381,19 @@ export default function AnalyzePage() {
                         <span>Start Analysis</span>
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Agent Selection Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl">
+            <motion.div 
+              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              whileHover={{ scale: 1.01 }}
+            >
               <div className="p-6">
                 <AgentSelection
                   selectedAgents={selectedAgents}
@@ -281,20 +401,26 @@ export default function AnalyzePage() {
                   disabled={isAnalyzing}
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Right Column - Quick Stats / Info */}
           <div className="space-y-6">
             {/* Stats Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <motion.div 
+              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
               <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
                 Quick Stats
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Selected Agents</span>
-                  <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                  <span className="text-lg font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
                     {selectedAgents.length}/{AGENTS.length}
                   </span>
                 </div>
@@ -311,112 +437,168 @@ export default function AnalyzePage() {
                   <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
                   <span className={`text-sm font-semibold px-2 py-1 rounded-lg ${
                     isAnalyzing 
-                      ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                      ? 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400'
                       : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                   }`}>
                     {isAnalyzing ? 'Analyzing' : 'Ready'}
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Info Card */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 rounded-2xl border border-orange-200 dark:border-orange-900/50 p-6">
+            <motion.div 
+              className="bg-gradient-to-br from-cyan-50/80 to-blue-50/60 dark:from-cyan-900/20 dark:to-blue-800/10 rounded-2xl border border-cyan-200 dark:border-cyan-900/50 p-6"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-orange-500 dark:bg-orange-600 flex items-center justify-center flex-shrink-0">
+                <motion.div 
+                  className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 flex items-center justify-center flex-shrink-0"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                </div>
+                </motion.div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Tips</h3>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1.5">
                     <li className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-0.5">•</span>
+                      <span className="text-cyan-500 mt-0.5">•</span>
                       <span>Enter a single URL or sitemap URL</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-0.5">•</span>
+                      <span className="text-cyan-500 mt-0.5">•</span>
                       <span>Select agents based on your needs</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-0.5">•</span>
+                      <span className="text-cyan-500 mt-0.5">•</span>
                       <span>Watch real-time progress updates</span>
                     </li>
                   </ul>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
         {/* Progress Section */}
         {(isAnalyzing || logEntries.length > 0) && (
-          <div className="mt-6 animate-fade-in">
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <ProgressSection
               progress={progress}
               progressMessage={progressMessage}
               logEntries={logEntries}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* Results Section */}
         {Object.keys(results).length > 0 && (
-          <div className="mt-6 animate-fade-in">
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <ResultsSection results={results} />
-          </div>
+          </motion.div>
         )}
 
         {/* Empty State */}
         {!isAnalyzing && logEntries.length === 0 && Object.keys(results).length === 0 && (
-          <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <motion.div 
+            className="mt-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12 text-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
             <div className="max-w-md mx-auto">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl flex items-center justify-center">
-                <svg className="w-12 h-12 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <motion.div 
+                className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-cyan-100 to-blue-200 dark:from-cyan-900/30 dark:to-blue-800/30 rounded-2xl flex items-center justify-center"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <svg className="w-12 h-12 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Ready to Analyze</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
                 Enter a website URL or sitemap URL above and select the AI agents you want to run. 
                 Get comprehensive SEO insights in real-time.
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                <span className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm font-medium">
+                <motion.span 
+                  className="px-4 py-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-lg text-sm font-medium"
+                  whileHover={{ scale: 1.05 }}
+                >
                   🔍 SEO Analysis
-                </span>
-                <span className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm font-medium">
+                </motion.span>
+                <motion.span 
+                  className="px-4 py-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-lg text-sm font-medium"
+                  whileHover={{ scale: 1.05 }}
+                >
                   📊 Real-time Progress
-                </span>
-                <span className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm font-medium">
+                </motion.span>
+                <motion.span 
+                  className="px-4 py-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-lg text-sm font-medium"
+                  whileHover={{ scale: 1.05 }}
+                >
                   📈 Detailed Reports
-                </span>
+                </motion.span>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="mt-16 py-8 border-t border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+      <motion.footer 
+        className="mt-16 py-8 border-t border-cyan-100/50 dark:border-cyan-900/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm relative z-10"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.6 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center text-lg">
+            <motion.div 
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-lg">
                 🤖
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">AI SEO Ecosystem</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Multi-Agent Intelligence</p>
               </div>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              © 2024 AI SEO Ecosystem. All rights reserved.
-            </p>
+            </motion.div>
+            <motion.p 
+              className="text-xs text-gray-500 dark:text-gray-400"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              © 2025 AI SEO Ecosystem. All rights reserved.
+            </motion.p>
           </div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
