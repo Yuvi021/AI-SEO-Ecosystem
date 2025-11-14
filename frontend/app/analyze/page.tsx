@@ -77,15 +77,17 @@ function AnalyzePageContent() {
 
     // Create new EventSource connection
     const isSitemap = isSitemapURL(url);
+    const getToken = localStorage.getItem("authToken")
     const params = new URLSearchParams({
       url: url,
       agents: selectedAgents.join(','),
       isSitemap: isSitemap.toString(),
+      token: `Bearer ${getToken}`
     });
 
     // Connect directly to backend API
     const eventSource = new EventSource(
-      `${API_URL}/analyze-stream?${params}`
+      `${API_URL}/analyze-stream?${params}`,
     );
 
     eventSourceRef.current = eventSource;

@@ -12,30 +12,6 @@ export const AGENTS = [
     category: 'core',
   },
   {
-    id: 'keywordResearch',
-    name: 'Keyword Research',
-    description: 'Advanced keyword research with volume & difficulty',
-    category: 'research',
-  },
-  {
-    id: 'serp',
-    name: 'SERP Analysis',
-    description: 'Analyzes search results and ranking opportunities',
-    category: 'research',
-  },
-  {
-    id: 'rankTracking',
-    name: 'Rank Tracking',
-    description: 'Monitors keyword rankings over time',
-    category: 'research',
-  },
-  {
-    id: 'competitor',
-    name: 'Competitor Analysis',
-    description: 'Analyzes competitor strategies and gaps',
-    category: 'research',
-  },
-  {
     id: 'content',
     name: 'Content Optimization',
     description: 'Analyzes readability and structure',

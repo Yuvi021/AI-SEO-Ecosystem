@@ -23,7 +23,7 @@ export function verifyAuthToken(token) {
 }
 
 export function extractTokenFromRequest(req) {
-  const header = req.headers?.authorization || '';
+  const header = req.headers?.authorization ||  req.query.token || req.cookies.token || '';
   if (header.startsWith('Bearer ')) {
     return header.slice(7);
   }
