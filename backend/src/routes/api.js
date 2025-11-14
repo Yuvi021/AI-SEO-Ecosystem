@@ -151,6 +151,166 @@ export function apiRoutes(agentManager) {
     }
   });
 
+  // Keyword Research endpoint
+  router.post('/keyword-research', async (req, res) => {
+    try {
+      const { keywords, options } = req.body;
+      
+      if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+        return res.status(400).json({ error: 'Keywords array is required' });
+      }
+
+      const result = await agentManager.agents.keywordResearch.research(keywords, options || {});
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // SERP Analysis endpoint
+  router.post('/serp-analysis', async (req, res) => {
+    try {
+      const { keywords, options } = req.body;
+      
+      if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+        return res.status(400).json({ error: 'Keywords array is required' });
+      }
+
+      const result = await agentManager.agents.serp.analyze(keywords, options || {});
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Rank Tracking endpoint
+  router.post('/rank-tracking', async (req, res) => {
+    try {
+      const { url, keywords, options } = req.body;
+      
+      if (!url || !keywords || !Array.isArray(keywords)) {
+        return res.status(400).json({ error: 'URL and keywords array are required' });
+      }
+
+      const result = await agentManager.agents.rankTracking.trackRankings(url, keywords, options || {});
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get rank tracking history
+  router.get('/rank-tracking/history', async (req, res) => {
+    try {
+      const { url, days } = req.query;
+      
+      if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+      }
+
+      const history = await agentManager.agents.rankTracking.getHistoricalData(url, parseInt(days) || 30);
+      res.json({ success: true, data: history });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Competitor Analysis endpoint
+  router.post('/competitor-analysis', async (req, res) => {
+    try {
+      const { targetUrl, competitors, keywords } = req.body;
+      
+      if (!targetUrl || !competitors || !Array.isArray(competitors)) {
+        return res.status(400).json({ error: 'Target URL and competitors array are required' });
+      }
+
+      const result = await agentManager.agents.competitor.analyze(
+        targetUrl, 
+        competitors, 
+        keywords || []
+      );
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Comprehensive SEO Analysis (combines multiple agents)
+  router.post('/comprehensive-analysis', async (req, res) => {
+    try {
+      const { url, keywords, competitors } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+      }
+
+      const results = {
+        url,
+        timestamp: new Date().toISOString()
+      };
+
+      // Run standard analysis
+      results.seoAnalysis = await agentManager.processURL(url);
+
+      // Run keyword research if keywords provided
+      if (keywords && Array.isArray(keywords) && keywords.length > 0) {
+        results.keywordResearch = await agentManager.agents.keywordResearch.research(keywords);
+        results.serpAnalysis = await agentManager.agents.serp.analyze(keywords);
+        results.rankTracking = await agentManager.agents.rankTracking.trackRankings(url, keywords);
+      }
+
+      // Run competitor analysis if competitors provided
+      if (competitors && Array.isArray(competitors) && competitors.length > 0) {
+        results.competitorAnalysis = await agentManager.agents.competitor.analyze(
+          url, 
+          competitors, 
+          keywords || []
+        );
+      }
+
+      res.json({ success: true, data: results });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Blog Generator endpoint
+  router.post('/generate-blog', async (req, res) => {
+    try {
+      const {
+        topic,
+        keywords = [],
+        targetLength = 1500,
+        tone = 'professional',
+        includeIntro = true,
+        includeConclusion = true,
+        includeFAQ = false,
+        targetAudience = 'general',
+        background = ''
+      } = req.body;
+      
+      if (!topic) {
+        return res.status(400).json({ error: 'Topic is required' });
+      }
+
+      const result = await agentManager.agents.blogGenerator.generateBlog({
+        topic,
+        keywords,
+        targetLength,
+        tone,
+        includeIntro,
+        includeConclusion,
+        includeFAQ,
+        targetAudience,
+        background
+      });
+
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
 }
 

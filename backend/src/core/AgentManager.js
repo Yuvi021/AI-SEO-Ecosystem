@@ -1,5 +1,6 @@
 import { CrawlAgent } from '../agents/CrawlAgent.js';
 import { KeywordIntelligenceAgent } from '../agents/KeywordIntelligenceAgent.js';
+import { KeywordResearchAgent } from '../agents/KeywordResearchAgent.js';
 import { ContentOptimizationAgent } from '../agents/ContentOptimizationAgent.js';
 import { SchemaAgent } from '../agents/SchemaAgent.js';
 import { TechnicalSEOAgent } from '../agents/TechnicalSEOAgent.js';
@@ -8,12 +9,17 @@ import { ImageIntelligenceAgent } from '../agents/ImageIntelligenceAgent.js';
 import { ValidationAgent } from '../agents/ValidationAgent.js';
 import { ReportAgent } from '../agents/ReportAgent.js';
 import { LearningAgent } from '../agents/LearningAgent.js';
+import { SERPAnalysisAgent } from '../agents/SERPAnalysisAgent.js';
+import { RankTrackingAgent } from '../agents/RankTrackingAgent.js';
+import { CompetitorAnalysisAgent } from '../agents/CompetitorAnalysisAgent.js';
+import { BlogGeneratorAgent } from '../agents/BlogGeneratorAgent.js';
 
 export class AgentManager {
   constructor() {
     this.agents = {
       crawl: new CrawlAgent(),
       keyword: new KeywordIntelligenceAgent(),
+      keywordResearch: new KeywordResearchAgent(),
       content: new ContentOptimizationAgent(),
       schema: new SchemaAgent(),
       technical: new TechnicalSEOAgent(),
@@ -21,7 +27,11 @@ export class AgentManager {
       image: new ImageIntelligenceAgent(),
       validation: new ValidationAgent(),
       report: new ReportAgent(),
-      learning: new LearningAgent()
+      learning: new LearningAgent(),
+      serp: new SERPAnalysisAgent(),
+      rankTracking: new RankTrackingAgent(),
+      competitor: new CompetitorAnalysisAgent(),
+      blogGenerator: new BlogGeneratorAgent()
     };
     
     this.taskQueue = [];

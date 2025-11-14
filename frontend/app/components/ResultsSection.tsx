@@ -125,13 +125,17 @@ interface ResultsSectionProps {
 const agentIcons: Record<string, string> = {
   crawl: '🕷️',
   keyword: '🔑',
+  keywordResearch: '🔍',
+  serp: '📊',
+  rankTracking: '📈',
+  competitor: '🎯',
   content: '📝',
   schema: '📋',
   technical: '⚙️',
   meta: '🏷️',
   image: '🖼️',
   validation: '✅',
-  report: '📊',
+  report: '📄',
 };
 
 export default function ResultsSection({ results }: ResultsSectionProps) {

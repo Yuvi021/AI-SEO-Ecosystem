@@ -1,6 +1,6 @@
 'use client';
 
-import { AGENTS } from '../lib/constants';
+import { AGENTS, AGENT_CATEGORIES } from '../lib/constants';
 
 interface AgentSelectionProps {
   selectedAgents: string[];
@@ -11,13 +11,17 @@ interface AgentSelectionProps {
 const agentIcons: Record<string, string> = {
   crawl: '🕷️',
   keyword: '🔑',
+  keywordResearch: '🔍',
+  serp: '📊',
+  rankTracking: '📈',
+  competitor: '🎯',
   content: '📝',
   schema: '📋',
   technical: '⚙️',
   meta: '🏷️',
   image: '🖼️',
   validation: '✅',
-  report: '📊',
+  report: '📄',
 };
 
 export default function AgentSelection({
