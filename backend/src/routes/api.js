@@ -216,7 +216,7 @@ export function apiRoutes(agentManager) {
   });
 
   // Keyword Research endpoint
-  router.post('/keyword-research', async (req, res) => {
+  router.post('/keyword-research', requireAuth, async (req, res) => {
     try {
       const { keywords, options } = req.body;
       
@@ -232,7 +232,7 @@ export function apiRoutes(agentManager) {
   });
 
   // SERP Analysis endpoint
-  router.post('/serp-analysis', async (req, res) => {
+  router.post('/serp-analysis', requireAuth, async (req, res) => {
     try {
       const { keywords, options } = req.body;
       
@@ -248,7 +248,7 @@ export function apiRoutes(agentManager) {
   });
 
   // Rank Tracking endpoint
-  router.post('/rank-tracking', async (req, res) => {
+  router.post('/rank-tracking', requireAuth, async (req, res) => {
     try {
       const { url, keywords, options } = req.body;
       
@@ -264,7 +264,7 @@ export function apiRoutes(agentManager) {
   });
 
   // Get rank tracking history
-  router.get('/rank-tracking/history', async (req, res) => {
+  router.get('/rank-tracking/history', requireAuth, async (req, res) => {
     try {
       const { url, days } = req.query;
       
@@ -280,7 +280,7 @@ export function apiRoutes(agentManager) {
   });
 
   // Competitor Analysis endpoint
-  router.post('/competitor-analysis', async (req, res) => {
+  router.post('/competitor-analysis', requireAuth, async (req, res) => {
     try {
       const { targetUrl, competitors, keywords } = req.body;
       
@@ -300,7 +300,7 @@ export function apiRoutes(agentManager) {
   });
 
   // Comprehensive SEO Analysis (combines multiple agents)
-  router.post('/comprehensive-analysis', async (req, res) => {
+  router.post('/comprehensive-analysis', requireAuth, async (req, res) => {
     try {
       const { url, keywords, competitors } = req.body;
       
@@ -339,7 +339,7 @@ export function apiRoutes(agentManager) {
   });
 
   // Blog Generator endpoint
-  router.post('/generate-blog', async (req, res) => {
+  router.post('/generate-blog', requireAuth, async (req, res) => {
     try {
       const {
         topic,
