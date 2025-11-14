@@ -11,7 +11,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-const allowedOrigins = ['https://aiseoecosystem.netlify.app','http://localhost:3000'];
+// const allowedOrigins = ['https://aiseoecosystem.netlify.app','http://localhost:3000'];
+const allowedOrigins = ['*'];
 
 const corsOptions = {
   origin(origin, callback) {
