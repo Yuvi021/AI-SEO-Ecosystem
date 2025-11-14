@@ -28,6 +28,9 @@ npm install
    ```bash
    PORT=3001
    OPENAI_MODEL=gpt-4-turbo-preview
+   # MongoDB
+   MONGODB_URI=mongodb://localhost:27017/ai-seo-ecosystem
+   MONGODB_DB_NAME=ai-seo-ecosystem
    ```
 
 ### Running
@@ -93,6 +96,26 @@ backend/
 ```
 
 ## 🔌 API Endpoints
+### Auth
+```
+POST /api/auth/signup
+Content-Type: application/json
+{
+  "email": "user@example.com",  // or "emailId"
+  "password": "StrongP@ssw0rd"
+}
+
+POST /api/auth/signin
+Content-Type: application/json
+{
+  "email": "user@example.com",  // or "emailId"
+  "password": "StrongP@ssw0rd"
+}
+
+GET /api/auth/me
+Authorization: Bearer <jwt>
+```
+Responses include a JWT `token` and user details. Use the token in the `Authorization: Bearer <token>` header for protected routes. Passwords are stored as bcrypt hashes in MongoDB.
 
 ### Analyze URL (Streaming)
 ```
@@ -140,6 +163,13 @@ const PORT = process.env.PORT || 3001;
 
 ### CORS
 CORS is enabled by default. To configure, edit `src/server.js`.
+
+### JWT
+Set the following environment variables for auth tokens:
+```
+JWT_SECRET=your-strong-secret
+JWT_EXPIRES_IN=7d
+```
 
 ## 📊 Reports
 

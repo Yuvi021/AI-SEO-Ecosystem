@@ -3,6 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import { AgentManager } from './core/AgentManager.js';
 import { apiRoutes } from './routes/api.js';
+import { connectToMongo, disconnectMongo, getMongoStatus } from './db/mongo.js';
+import { authRoutes } from './routes/auth.js';
+import { initCloudinary } from './utils/cloudinary.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,17 +19,43 @@ const agentManager = new AgentManager();
 
 // API Routes
 app.use('/api', apiRoutes(agentManager));
+app.use('/api/auth', authRoutes());
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', agents: agentManager.getAgentStatus() });
+  res.json({
+    status: 'ok',
+    agents: agentManager.getAgentStatus(),
+    mongo: getMongoStatus(),
+  });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 AI SEO Ecosystem Server running on http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🚀 AI SEO Ecosystem Server running on ${PORT}`);
+  console.log(`📊 Health check: ${PORT}/health`);
+
+  // Initialize MongoDB connection (non-blocking)
+  connectToMongo().catch((err) => {
+    console.error('MongoDB initialization error:', err?.message || err);
+  });
+
+  // Initialize Cloudinary (non-blocking)
+  try {
+    initCloudinary();
+  } catch (e) {
+    console.error('Cloudinary init error:', e?.message || e);
+  }
 });
+
+// Graceful shutdown
+const shutdown = async () => {
+  await disconnectMongo();
+  process.exit(0);
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 export { app, agentManager };
 

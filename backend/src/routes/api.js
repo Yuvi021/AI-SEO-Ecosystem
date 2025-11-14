@@ -1,12 +1,19 @@
 import express from 'express';
 import { SitemapParser } from '../utils/sitemapParser.js';
+import { requireAuth } from '../middleware/auth.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { uploadJsonFile, isCloudinaryReady } from '../utils/cloudinary.js';
+import { ensureResultIndexes, getNextVersion, createResultRecord, listResultsByUrl } from '../db/resultRepository.js';
 
 export function apiRoutes(agentManager) {
   const router = express.Router();
   const sitemapParser = new SitemapParser();
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const reportsDir = path.join(__dirname, '../../reports');
 
   // Analyze URL endpoint
-  router.post('/analyze', async (req, res) => {
+  router.post('/analyze', requireAuth, async (req, res) => {
     try {
       const { url, options } = req.body;
       
@@ -15,14 +22,55 @@ export function apiRoutes(agentManager) {
       }
 
       const results = await agentManager.processURL(url, options || {});
-      res.json({ success: true, data: results });
+      // Attempt Cloudinary upload of the JSON report and record it
+      let resultRecord = null;
+      try {
+        if (results?.report?.files?.json && isCloudinaryReady()) {
+          const jsonFilename = results.report.files.json;
+          const jsonPath = path.join(reportsDir, jsonFilename);
+          const publicId = jsonFilename; // keep identical name as requested
+
+          const uploadRes = await uploadJsonFile(jsonPath, publicId);
+
+          // Save to DB with versioning
+          await ensureResultIndexes();
+          const userId = req.user?.sub || 'unknown';
+          const version = await getNextVersion(userId, url);
+          resultRecord = await createResultRecord({
+            userId,
+            url,
+            version,
+            cloudinaryUrl: uploadRes.secure_url || uploadRes.url,
+          });
+        }
+      } catch (e) {
+        console.error('Report upload/save failed:', e?.message || e);
+      }
+
+      res.json({ success: true, data: results, resultRecord });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   });
 
+  // Get results for a given URL (version-wise) for current user
+  router.get('/results', requireAuth, async (req, res) => {
+    try {
+      const { url, order } = req.query;
+      if (!url) {
+        return res.status(400).json({ error: 'Query param "url" is required' });
+      }
+      const userId = req.user?.sub;
+      const sortOrder = order === 'desc' ? -1 : 1; // default ascending v1..vn
+      const items = await listResultsByUrl(userId, url, sortOrder);
+      return res.status(200).json({ url, userId, results: items });
+    } catch (e) {
+      return res.status(500).json({ error: e?.message || 'Failed to fetch results' });
+    }
+  });
+
   // Streaming analysis endpoint with SSE
-  router.get('/analyze-stream', async (req, res) => {
+  router.get('/analyze-stream', requireAuth, async (req, res) => {
     const { url, agents, isSitemap } = req.query;
 
     if (!url) {
@@ -141,10 +189,26 @@ export function apiRoutes(agentManager) {
   });
 
   // Run specific agent
-  router.post('/agent/:agentName', async (req, res) => {
+  router.post('/agent/:agentName', requireAuth, async (req, res) => {
     try {
       const { agentName } = req.params;
-      const result = await agentManager.runAgent(agentName, req.body);
+      const { url, data } = req.body || {};
+
+      // Accept either a precomputed crawlData as "data" or a URL to crawl first
+      let input = data;
+      if (!input && url) {
+        // Generate crawl data from URL before executing the agent
+        const crawlData = await agentManager.agents.crawl.crawl(url);
+        input = crawlData;
+      }
+
+      if (!input) {
+        return res.status(400).json({
+          error: 'Provide either "url" to crawl or "data" (crawlData) to run the agent.'
+        });
+      }
+
+      const result = await agentManager.runAgent(agentName, input);
       res.json({ success: true, data: result });
     } catch (error) {
       res.status(500).json({ error: error.message });
