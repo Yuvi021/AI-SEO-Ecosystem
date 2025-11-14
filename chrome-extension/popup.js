@@ -1,47 +1,326 @@
-// API URL - matches backend server port
-const API_URL = 'http://localhost:3001/api';
+// API_URL is defined in auth.js (loaded first)
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const analyzeBtn = document.getElementById('analyzeBtn');
-  const viewReportBtn = document.getElementById('viewReportBtn');
-  const statusDiv = document.getElementById('status');
-  const scoreDisplay = document.getElementById('scoreDisplay');
-  const scoreValue = document.getElementById('scoreValue');
-  const scoreStatus = document.getElementById('scoreStatus');
-  const urlDisplay = document.getElementById('urlDisplay');
-  const recommendationsDiv = document.getElementById('recommendations');
-  const recommendationsList = document.getElementById('recommendationsList');
+// Initialize immediately - show auth by default
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM Content Loaded');
+  
+  // Show auth form by default
+  const authContainer = document.getElementById('authContainer');
+  const appContainer = document.getElementById('appContainer');
+  if (authContainer) {
+    authContainer.classList.remove('hidden');
+    console.log('Auth container shown');
+  }
+  if (appContainer) {
+    appContainer.classList.remove('show');
+  }
+  
+  // Initialize async
+  (async () => {
+    try {
+      console.log('Starting initialization...');
+      
+      // Wait for authUtils to be available
+      let retries = 0;
+      while (!window.authUtils && retries < 10) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        retries++;
+      }
+      
+      if (!window.authUtils) {
+        console.error('authUtils not available after retries');
+        return;
+      }
+      
+      console.log('authUtils available');
 
-  // Get current tab URL
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const currentUrl = tab.url;
-  urlDisplay.textContent = currentUrl;
+    // UI Elements
+    const authContainer = document.getElementById('authContainer');
+    const appContainer = document.getElementById('appContainer');
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const authError = document.getElementById('authError');
+    const userInfo = document.getElementById('userInfo');
+    const userEmail = document.getElementById('userEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const viewReportBtn = document.getElementById('viewReportBtn');
+    const statusDiv = document.getElementById('status');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreStatus = document.getElementById('scoreStatus');
+    const urlDisplay = document.getElementById('urlDisplay');
+    const recommendationsDiv = document.getElementById('recommendations');
+    const recommendationsList = document.getElementById('recommendationsList');
 
-  // Load cached results if available
-  const cached = await chrome.storage.local.get(['lastAnalysis', 'lastUrl']);
-  if (cached.lastAnalysis && cached.lastUrl === currentUrl) {
-    displayResults(cached.lastAnalysis);
+    // Check if elements exist
+    if (!authContainer || !appContainer) {
+      console.error('Required elements not found');
+      return;
+    }
+
+    // Check authentication status
+    const authenticated = await window.authUtils.isAuthenticated();
+    
+    if (authenticated) {
+      showApp();
+    } else {
+      showAuth();
+    }
+
+  // Tab switching
+  loginTab.addEventListener('click', () => {
+    loginTab.classList.add('active');
+    signupTab.classList.remove('active');
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+    hideError();
+  });
+
+  signupTab.addEventListener('click', () => {
+    signupTab.classList.add('active');
+    loginTab.classList.remove('active');
+    signupForm.style.display = 'block';
+    loginForm.style.display = 'none';
+    hideError();
+  });
+
+  // Login form submission
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Login form submitted');
+    
+    const emailInput = document.getElementById('loginEmail');
+    const passwordInput = document.getElementById('loginPassword');
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    
+    console.log('Attempting login for:', email);
+    hideError();
+    
+    if (!email || !password) {
+      showError('Please enter both email and password');
+      return;
+    }
+    
+    try {
+      // Show loading state
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
+      
+      // Don't clear fields yet
+      const result = await window.authUtils.login(email, password);
+      console.log('Login result:', result);
+      
+      if (result.success) {
+        console.log('Login successful, showing app');
+        // Clear fields only on success
+        emailInput.value = '';
+        passwordInput.value = '';
+        showApp();
+      } else {
+        console.error('Login failed:', result.error);
+        showError(result.error || 'Login failed');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        // Keep password field for retry, but don't clear it
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      showError(error.message || 'An error occurred during login');
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Login';
+    }
+    
+    return false;
+  });
+
+  // Signup form submission
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Signup form submitted');
+    
+    const emailInput = document.getElementById('signupEmail');
+    const passwordInput = document.getElementById('signupPassword');
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    
+    hideError();
+    
+    if (!email || !password) {
+      showError('Please enter both email and password');
+      return;
+    }
+    
+    if (password.length < 6) {
+      showError('Password must be at least 6 characters');
+      return;
+    }
+    
+    try {
+      // Show loading state
+      const submitBtn = signupForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing up...';
+      
+      const result = await window.authUtils.signup(email, password);
+      console.log('Signup result:', result);
+      
+      if (result.success) {
+        console.log('Signup successful, showing app');
+        // Clear fields only on success
+        emailInput.value = '';
+        passwordInput.value = '';
+        showApp();
+      } else {
+        console.error('Signup failed:', result.error);
+        showError(result.error || 'Signup failed');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      showError(error.message || 'An error occurred during signup');
+      const submitBtn = signupForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign Up';
+    }
+    
+    return false;
+  });
+
+  // Logout
+  logoutBtn.addEventListener('click', async () => {
+    await window.authUtils.logout();
+    showAuth();
+    // Clear forms
+    loginForm.reset();
+    signupForm.reset();
+  });
+
+  // Show auth UI
+  function showAuth() {
+    console.log('Showing auth UI');
+    if (authContainer) {
+      authContainer.classList.remove('hidden');
+      authContainer.style.display = 'block';
+    }
+    if (appContainer) {
+      appContainer.classList.remove('show');
+      appContainer.style.display = 'none';
+    }
   }
 
-  analyzeBtn.addEventListener('click', async () => {
-    try {
+  // Show app UI
+  async function showApp() {
+    console.log('Showing app UI');
+    if (authContainer) {
+      authContainer.classList.add('hidden');
+      authContainer.style.display = 'none';
+    }
+    if (appContainer) {
+      appContainer.classList.add('show');
+      appContainer.style.display = 'block';
+    }
+    
+    // Load user info
+    const user = await window.authUtils.getUser();
+    if (user && userEmail) {
+      userEmail.textContent = user.email;
+      if (userInfo) userInfo.classList.add('show');
+    }
+    
+    // Initialize app
+    await initializeApp();
+  }
+
+  // Initialize main app (only once)
+  let appInitialized = false;
+  async function initializeApp() {
+    if (appInitialized) return;
+    appInitialized = true;
+    
+    // Get current tab URL
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const currentUrl = tab.url;
+    urlDisplay.textContent = currentUrl;
+
+    // Load cached results if available
+    const cached = await chrome.storage.local.get(['lastAnalysis', 'lastUrl']);
+    if (cached.lastAnalysis && cached.lastUrl === currentUrl) {
+      displayResults(cached.lastAnalysis);
+    }
+
+    analyzeBtn.addEventListener('click', async () => {
+      await handleAnalyze(currentUrl);
+    });
+
+    viewReportBtn.addEventListener('click', async () => {
+      // Open full report in new tab
+      const cached = await chrome.storage.local.get(['lastAnalysis']);
+      if (cached.lastAnalysis) {
+        // Create a data URL with the report HTML
+        const reportHTML = generateReportHTML(cached.lastAnalysis, currentUrl);
+        const blob = new Blob([reportHTML], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        chrome.tabs.create({ url });
+      } else {
+        // Fallback: open analyze page
+        chrome.tabs.create({
+          url: `https://ai-seo-ecosystem.onrender.com/api/analyze?url=${encodeURIComponent(currentUrl)}`
+        });
+      }
+    });
+
+    // Check backend connection on load
+    const isConnected = await checkBackendConnection();
+    if (!isConnected) {
+      statusDiv.style.display = 'block';
+      statusDiv.className = 'status error';
+      statusDiv.textContent = '⚠️ Backend not connected. Please start the backend server.';
       analyzeBtn.disabled = true;
+    }
+  }
+  
+  // Reset initialization flag when showing auth
+  const originalShowAuth = showAuth;
+  showAuth = function() {
+    appInitialized = false;
+    originalShowAuth();
+  };
+
+  // Handle analyze with auth token
+  async function handleAnalyze(currentUrl) {
+    const analyzeBtnEl = document.getElementById('analyzeBtn');
+    try {
+      analyzeBtnEl.disabled = true;
       statusDiv.style.display = 'block';
       statusDiv.className = 'status loading';
       statusDiv.textContent = 'Analyzing page...';
       scoreDisplay.style.display = 'none';
       recommendationsDiv.style.display = 'none';
 
-      const response = await fetch(`${API_URL}/analyze`, {
+      // Use apiRequest which includes auth token
+      const response = await window.authUtils.apiRequest('/analyze', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ url: currentUrl })
+        body: JSON.stringify({ 
+          url: currentUrl,
+          options: {}
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
       const data = await response.json();
@@ -63,27 +342,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Analysis error:', error);
       statusDiv.className = 'status error';
       statusDiv.textContent = `Error: ${error.message}`;
+      
+      // If unauthorized, show login again
+      if (error.message.includes('Session expired') || error.message.includes('401')) {
+        await window.authUtils.logout();
+        showAuth();
+        showError('Session expired. Please login again.');
+      }
     } finally {
-      analyzeBtn.disabled = false;
+      const analyzeBtnEl = document.getElementById('analyzeBtn');
+      analyzeBtnEl.disabled = false;
     }
-  });
-
-  viewReportBtn.addEventListener('click', async () => {
-    // Open full report in new tab
-    const cached = await chrome.storage.local.get(['lastAnalysis']);
-    if (cached.lastAnalysis) {
-      // Create a data URL with the report HTML
-      const reportHTML = generateReportHTML(cached.lastAnalysis, currentUrl);
-      const blob = new Blob([reportHTML], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      chrome.tabs.create({ url });
-    } else {
-      // Fallback: open analyze page
-      chrome.tabs.create({
-        url: `http://localhost:3000/analyze?url=${encodeURIComponent(currentUrl)}`
-      });
-    }
-  });
+  }
 
   function displayResults(results) {
     // Display score
@@ -219,10 +489,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 </html>`;
   }
 
-  // Check backend connection on load
+  // Error handling
+  function showError(message) {
+    console.log('Showing error:', message);
+    if (authError) {
+      authError.textContent = message;
+      authError.classList.add('show');
+      // Scroll to error
+      authError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      console.error('authError element not found');
+      alert(message); // Fallback alert
+    }
+  }
+
+  function hideError() {
+    if (authError) {
+      authError.classList.remove('show');
+      authError.textContent = '';
+    }
+  }
+
+  // Check backend connection
   async function checkBackendConnection() {
     try {
-      const response = await fetch(`${API_URL.replace('/api', '')}/health`);
+      // Use the API URL from auth.js
+      const apiUrl = window.authUtils && (await chrome.storage.local.get(['apiUrl'])).apiUrl || 'https://ai-seo-ecosystem.onrender.com/api';
+      const baseUrl = apiUrl.replace('/api', '');
+      const response = await fetch(`${baseUrl}/health`);
       if (response.ok) {
         return true;
       }
@@ -231,14 +525,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     return false;
   }
-
-  // Show connection status
-  const isConnected = await checkBackendConnection();
-  if (!isConnected) {
-    statusDiv.style.display = 'block';
-    statusDiv.className = 'status error';
-    statusDiv.textContent = '⚠️ Backend not connected. Please start the backend server.';
-    analyzeBtn.disabled = true;
-  }
+  
+    } catch (error) {
+      console.error('Popup initialization error:', error);
+      console.error(error.stack);
+    }
+  })();
 });
-
