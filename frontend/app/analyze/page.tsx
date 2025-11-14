@@ -729,15 +729,25 @@ function AnalyzePageContent() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Multi-Agent Intelligence</p>
               </div>
             </motion.div>
-            <motion.p 
-              className="text-xs text-gray-500 dark:text-gray-400"
+            <motion.div 
+              className="flex flex-col items-end gap-2"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              © 2025 AI SEO Ecosystem. All rights reserved.
-            </motion.p>
+              <div className="flex items-center gap-4 text-xs">
+                <Link href="/privacy-policy" className="text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms-of-service" className="text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                  Terms of Service
+                </Link>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                © 2025 AI SEO Ecosystem. All rights reserved.
+              </p>
+            </motion.div>
           </div>
         </div>
       </motion.footer>
