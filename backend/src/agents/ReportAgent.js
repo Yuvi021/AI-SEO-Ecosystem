@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { LighthouseScorer } from '../utils/lighthouseScorer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -9,6 +10,7 @@ export class ReportAgent {
     this.name = 'ReportAgent';
     this.status = 'ready';
     this.reportsDir = path.join(__dirname, '../../reports');
+    this.lighthouseScorer = new LighthouseScorer();
   }
 
   async generate(results, url) {
@@ -31,7 +33,8 @@ export class ReportAgent {
         },
         recommendations: this.aggregateRecommendations(results),
         html: null,
-        score: this.calculateOverallScore(results)
+        score: this.calculateOverallScore(results),
+        lighthouse: this.lighthouseScorer.calculateAllScores(results)
       };
 
       // Generate HTML report
@@ -49,8 +52,15 @@ export class ReportAgent {
   }
 
   generateSummary(results) {
+    const lighthouse = this.lighthouseScorer.calculateAllScores(results);
     const summary = {
       overallScore: this.calculateOverallScore(results),
+      lighthouse: {
+        performance: lighthouse.performance.score,
+        accessibility: lighthouse.accessibility.score,
+        bestPractices: lighthouse.bestPractices.score,
+        seo: lighthouse.seo.score
+      },
       totalRecommendations: 0,
       criticalIssues: 0,
       highPriority: 0,
@@ -72,22 +82,19 @@ export class ReportAgent {
   }
 
   calculateOverallScore(results) {
-    let score = 100;
+    // Calculate overall score as weighted average of Lighthouse scores
+    // Similar to Google Lighthouse: equal weighting (25% each) for all four categories
+    const lighthouse = this.lighthouseScorer.calculateAllScores(results);
     
-    // Deduct points based on validation issues
-    if (results.validation?.quality?.score) {
-      score = results.validation.quality.score;
-    } else {
-      // Manual calculation if validation not available
-      if (results.validation?.seoCompliance?.critical?.length) {
-        score -= results.validation.seoCompliance.critical.length * 15;
-      }
-      if (results.validation?.seoCompliance?.warnings?.length) {
-        score -= results.validation.seoCompliance.warnings.length * 3;
-      }
-    }
-
-    return Math.max(0, Math.min(100, Math.round(score)));
+    const performance = lighthouse.performance.score || 0;
+    const accessibility = lighthouse.accessibility.score || 0;
+    const bestPractices = lighthouse.bestPractices.score || 0;
+    const seo = lighthouse.seo.score || 0;
+    
+    // Equal weighting: 25% each category
+    const overallScore = (performance + accessibility + bestPractices + seo) / 4;
+    
+    return Math.max(0, Math.min(100, Math.round(overallScore)));
   }
 
   aggregateRecommendations(results) {

@@ -9,6 +9,89 @@ interface SEODashboardProps {
   url?: string;
 }
 
+// Lighthouse Score Card Component
+function LighthouseScoreCard({ title, score, icon, description, color }: {
+  title: string;
+  score: number;
+  icon: string;
+  description: string;
+  color: 'blue' | 'green' | 'purple' | 'orange';
+}) {
+  const scoreColor = score >= 90 ? 'text-green-600 dark:text-green-400' :
+                     score >= 50 ? 'text-orange-600 dark:text-orange-400' :
+                     'text-red-600 dark:text-red-400';
+  
+  const ringColor = score >= 90 ? 'stroke-green-500' :
+                    score >= 50 ? 'stroke-orange-500' :
+                    'stroke-red-500';
+  
+  const bgColor = color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/20' :
+                  color === 'green' ? 'bg-green-50 dark:bg-green-900/20' :
+                  color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/20' :
+                  'bg-orange-50 dark:bg-orange-900/20';
+  
+  const borderColor = color === 'blue' ? 'border-blue-200 dark:border-blue-800' :
+                      color === 'green' ? 'border-green-200 dark:border-green-800' :
+                      color === 'purple' ? 'border-purple-200 dark:border-purple-800' :
+                      'border-orange-200 dark:border-orange-800';
+
+  // Calculate stroke-dasharray for circular progress
+  const circumference = 2 * Math.PI * 45; // radius = 45
+  const offset = circumference - (score / 100) * circumference;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={`${bgColor} ${borderColor} rounded-xl p-6 border-2 text-center`}
+    >
+      <div className="flex flex-col items-center">
+        <div className="relative w-32 h-32 mb-4">
+          <svg className="transform -rotate-90 w-32 h-32">
+            {/* Background circle */}
+            <circle
+              cx="50%"
+              cy="50%"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="8"
+              className="text-gray-200 dark:text-gray-700"
+            />
+            {/* Progress circle */}
+            <circle
+              cx="50%"
+              cy="50%"
+              r="45"
+              fill="none"
+              strokeWidth="8"
+              strokeLinecap="round"
+              className={ringColor}
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className={`text-3xl font-bold ${scoreColor}`}>
+                {Math.round(score)}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="text-2xl mb-2">{icon}</div>
+        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-1">
+          {title}
+        </h3>
+        <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+          {description}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 const agentIcons: Record<string, string> = {
   crawl: '🕷️',
   keyword: '🔑',
@@ -23,6 +106,9 @@ const agentIcons: Record<string, string> = {
 
 export default function SEODashboard({ results, url }: SEODashboardProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(true);
+  const [showFallbackMessage, setShowFallbackMessage] = useState(false);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => {
@@ -36,10 +122,75 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
     });
   };
 
+  // Extract and normalize URL from results if not provided
+  const previewUrl = useMemo(() => {
+    const normalizeUrl = (urlString: string | null | undefined): string | null => {
+      if (!urlString) return null;
+      
+      // Remove whitespace
+      urlString = urlString.trim();
+      
+      // If it already has protocol, return as is
+      if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
+        return urlString;
+      }
+      
+      // If it starts with www., add https://
+      if (urlString.startsWith('www.')) {
+        return `https://${urlString}`;
+      }
+      
+      // If it looks like a domain (contains .), add https://
+      if (urlString.includes('.') && !urlString.includes(' ')) {
+        return `https://${urlString}`;
+      }
+      
+      return urlString;
+    };
+
+    let extractedUrl: string | null = null;
+    
+    if (url) {
+      extractedUrl = normalizeUrl(url);
+    } else {
+      // Try to extract URL from results
+      const firstResult = Object.values(results)[0];
+      if (firstResult) {
+        const crawlData = firstResult.crawl;
+        if (crawlData?.url) {
+          extractedUrl = normalizeUrl(crawlData.url);
+        }
+        
+        if (!extractedUrl) {
+          const reportData = firstResult.report;
+          if (reportData?.url) {
+            extractedUrl = normalizeUrl(reportData.url);
+          }
+        }
+      }
+      
+      // Try to get URL from results keys
+      if (!extractedUrl) {
+        const urlKeys = Object.keys(results);
+        if (urlKeys.length > 0) {
+          extractedUrl = normalizeUrl(urlKeys[0]);
+        }
+      }
+    }
+    
+    return extractedUrl;
+  }, [url, results]);
+
   // Process all results to create dashboard data
   const dashboardData = useMemo(() => {
     const data: any = {
       overallScore: 0,
+      lighthouse: {
+        performance: 0,
+        accessibility: 0,
+        bestPractices: 0,
+        seo: 0
+      },
       agents: [],
       totalIssues: 0,
       totalRecommendations: 0,
@@ -69,6 +220,19 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
         }
         if (report.score) {
           data.overallScore = report.score;
+        }
+        // Extract Lighthouse scores
+        if (report.lighthouse) {
+          data.lighthouse = {
+            performance: report.lighthouse.performance?.score || 0,
+            accessibility: report.lighthouse.accessibility?.score || 0,
+            bestPractices: report.lighthouse.bestPractices?.score || 0,
+            seo: report.lighthouse.seo?.score || 0
+          };
+        }
+        // Also check summary for lighthouse scores
+        if (report.summary?.lighthouse) {
+          data.lighthouse = report.summary.lighthouse;
         }
       }
 
@@ -108,8 +272,26 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
       });
     });
 
-    // Calculate overall score
-    if (data.agents.length > 0) {
+    // Calculate Lighthouse scores if not available from report
+    if (data.lighthouse.performance === 0 && data.lighthouse.accessibility === 0 && 
+        data.lighthouse.bestPractices === 0 && data.lighthouse.seo === 0) {
+      // Fallback: Calculate from agent results
+      data.lighthouse = calculateLighthouseScoresFromResults(results);
+    }
+
+    // Calculate overall score as weighted average of Lighthouse scores
+    // Similar to Google Lighthouse: equal weighting (25% each) for all four categories
+    if (data.lighthouse.performance > 0 || data.lighthouse.accessibility > 0 || 
+        data.lighthouse.bestPractices > 0 || data.lighthouse.seo > 0) {
+      const performance = data.lighthouse.performance || 0;
+      const accessibility = data.lighthouse.accessibility || 0;
+      const bestPractices = data.lighthouse.bestPractices || 0;
+      const seo = data.lighthouse.seo || 0;
+      
+      // Equal weighting: 25% each category
+      data.overallScore = Math.round((performance + accessibility + bestPractices + seo) / 4);
+    } else if (data.agents.length > 0) {
+      // Fallback: Simple average of agent scores if Lighthouse scores not available
       const totalScore = data.agents.reduce((sum: number, agent: any) => sum + agent.score, 0);
       data.overallScore = Math.round(totalScore / data.agents.length);
     }
@@ -170,6 +352,227 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                 <div className="text-sm text-gray-600 dark:text-gray-400">Overall Score</div>
               </div>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Performance Score with Website Preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 p-8"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <span className="text-3xl">⚡</span>
+            Performance
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Performance Score Gauge */}
+            <div className="flex flex-col items-center justify-center">
+              <LighthouseScoreCard
+                title="Performance"
+                score={dashboardData.lighthouse.performance}
+                icon="⚡"
+                description="Website loading speed and Core Web Vitals"
+                color="blue"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center max-w-md">
+                Values are estimated and may vary. The performance score is calculated directly from these metrics.
+              </p>
+              {/* Score Legend */}
+              <div className="flex items-center gap-4 mt-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">0-49</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">50-89</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-600 dark:text-gray-400">90-100</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Website Preview */}
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Website Preview</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Note: Many websites block iframe embedding for security. If preview doesn't load, use "Open in new tab".
+                  </p>
+                </div>
+                {previewUrl && (
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 whitespace-nowrap ml-4"
+                  >
+                    <span>Open in new tab</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+              <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-lg bg-white">
+                <div className="absolute top-0 left-0 right-0 h-8 bg-gray-100 dark:bg-gray-800 flex items-center px-3 gap-2 z-10">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                  <div className="flex-1 bg-white dark:bg-gray-700 rounded px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300 truncate">
+                    {previewUrl || 'No URL available'}
+                  </div>
+                </div>
+                <div className="pt-8 h-[500px] overflow-hidden relative bg-gray-50 dark:bg-gray-900">
+                  {previewUrl ? (
+                    <>
+                      {isLoadingPreview && !previewError && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 z-20">
+                          <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto mb-4"></div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Loading preview...</p>
+                          </div>
+                        </div>
+                      )}
+                      {previewError ? (
+                        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                          <div className="text-center p-6">
+                            <div className="text-5xl mb-4">🔒</div>
+                            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Preview Unavailable</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 max-w-sm">
+                              {previewError.includes('refused') || previewError.includes('Connection refused') 
+                                ? 'The website refused to connect. This usually means it blocks iframe embedding for security reasons (X-Frame-Options or Content-Security-Policy headers).'
+                                : previewError.includes('blocks iframe') || previewError.includes('X-Frame')
+                                ? 'This website blocks embedding in iframes for security reasons (X-Frame-Options or CSP headers).'
+                                : previewError}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mb-4 max-w-sm">
+                              This is a browser security feature and cannot be bypassed. Click the button below to view the website directly.
+                            </p>
+                            <a
+                              href={previewUrl || undefined}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors text-sm"
+                            >
+                              <span>Open Website in New Tab</span>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <iframe
+                            key={previewUrl} // Force re-render on URL change
+                            src={previewUrl || undefined}
+                            className="w-full h-full border-0"
+                            title="Website Preview"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            loading="lazy"
+                            onLoad={(e) => {
+                              setIsLoadingPreview(false);
+                              const iframe = e.target as HTMLIFrameElement;
+                              console.log('🔵 [Preview] Iframe onLoad triggered:', previewUrl);
+                              
+                              // Check if iframe loaded successfully after a delay
+                              setTimeout(() => {
+                                try {
+                                  // Try to access iframe content (will fail if blocked by X-Frame-Options)
+                                  if (iframe.contentWindow && iframe.contentDocument) {
+                                    const body = iframe.contentDocument.body;
+                                    if (body) {
+                                      console.log('✅ [Preview] Content loaded successfully');
+                                      // Clear any previous errors
+                                      setPreviewError(null);
+                                    } else {
+                                      console.warn('⚠️ [Preview] No body element found');
+                                    }
+                                  }
+                                } catch (error) {
+                                  // Cross-origin or X-Frame-Options block - this is expected for many sites
+                                  console.warn('⚠️ [Preview] Cross-origin block (expected for many sites):', error);
+                                  // Don't set error immediately - let the browser show what it can
+                                }
+                              }, 2000);
+                            }}
+                            onError={(e) => {
+                              console.error('❌ [Preview] Iframe onError:', e);
+                              setIsLoadingPreview(false);
+                              setPreviewError('Failed to load preview - website may block iframe embedding');
+                              setShowFallbackMessage(true);
+                            }}
+                          />
+                          {/* Fallback: Show message after loading */}
+                          {!isLoadingPreview && !previewError && (
+                            <div 
+                              className="absolute bottom-4 left-4 right-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-xs text-blue-800 dark:text-blue-200 z-30 pointer-events-none"
+                            >
+                              <p className="font-semibold mb-1">💡 Preview Note</p>
+                              <p>If you see a blank page or error, the website blocks iframe embedding. Click "Open in new tab" above to view it directly.</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🌐</div>
+                        <p>No URL available for preview</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Lighthouse Scores - Similar to Google Lighthouse */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 p-8"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <span className="text-3xl">📊</span>
+            Lighthouse Scores
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {/* Accessibility */}
+            <LighthouseScoreCard
+              title="Accessibility"
+              score={dashboardData.lighthouse.accessibility}
+              icon="♿"
+              description="WCAG compliance and screen reader support"
+              color="green"
+            />
+            {/* Best Practices */}
+            <LighthouseScoreCard
+              title="Best Practices"
+              score={dashboardData.lighthouse.bestPractices}
+              icon="✅"
+              description="Security, modern web standards, and best practices"
+              color="purple"
+            />
+            {/* SEO */}
+            <LighthouseScoreCard
+              title="SEO"
+              score={dashboardData.lighthouse.seo}
+              icon="🔍"
+              description="Search engine optimization and discoverability"
+              color="orange"
+            />
           </div>
         </motion.div>
 
@@ -717,6 +1120,87 @@ function calculateAgentScore(formatted: any): number {
   
   // Ensure score is between 0 and 100
   return Math.max(0, Math.min(100, score));
+}
+
+// Helper function to calculate Lighthouse scores from results (fallback)
+function calculateLighthouseScoresFromResults(results: Record<string, Record<string, any>>): {
+  performance: number;
+  accessibility: number;
+  bestPractices: number;
+  seo: number;
+} {
+  let performance = 100;
+  let accessibility = 100;
+  let bestPractices = 100;
+  let seo = 100;
+
+  // Process all agent results
+  Object.values(results).forEach((agentResults: any) => {
+    // Technical SEO affects Performance, Accessibility, Best Practices
+    if (agentResults.technical) {
+      const tech = agentResults.technical.formatted || agentResults.technical;
+      
+      // Performance
+      if (!tech.mobile?.hasViewport) performance -= 10;
+      if (!tech.security?.isHTTPS) {
+        performance -= 10;
+        bestPractices -= 20;
+      }
+      
+      // Accessibility
+      if (tech.accessibility?.imagesWithoutAlt > 0) {
+        accessibility -= Math.min(20, tech.accessibility.imagesWithoutAlt * 5);
+      }
+    }
+
+    // SEO scoring
+    if (agentResults.crawl) {
+      const crawl = agentResults.crawl.formatted || agentResults.crawl;
+      if (!crawl.title) seo -= 15;
+      if (!crawl.headings?.h1 || crawl.headings.h1.length === 0) {
+        seo -= 15;
+        accessibility -= 10;
+      }
+      if (crawl.headings?.h1?.length > 1) seo -= 10;
+      if (!crawl.meta?.viewport) {
+        seo -= 10;
+        accessibility -= 10;
+      }
+      if (!crawl.meta?.description) seo -= 8;
+    }
+
+    if (agentResults.meta) {
+      const meta = agentResults.meta.formatted || agentResults.meta;
+      if (meta.title?.length && (meta.title.length < 30 || meta.title.length > 60)) seo -= 5;
+      if (meta.metaDescription?.length && 
+          (meta.metaDescription.length < 120 || meta.metaDescription.length > 160)) seo -= 5;
+    }
+
+    if (agentResults.schema) {
+      const schema = agentResults.schema.formatted || agentResults.schema;
+      if (!schema.detected || schema.detected.length === 0) seo -= 5;
+    }
+
+    if (agentResults.image) {
+      const image = agentResults.image.formatted || agentResults.image;
+      const totalImages = image.images?.length || 0;
+      const imagesWithoutAlt = image.images?.filter((img: any) => !img.hasAlt).length || 0;
+      if (totalImages > 0 && imagesWithoutAlt > 0) {
+        const altCoverage = ((totalImages - imagesWithoutAlt) / totalImages) * 100;
+        if (altCoverage < 80) {
+          seo -= 2;
+          accessibility -= Math.min(20, imagesWithoutAlt * 5);
+        }
+      }
+    }
+  });
+
+  return {
+    performance: Math.max(0, Math.min(100, Math.round(performance))),
+    accessibility: Math.max(0, Math.min(100, Math.round(accessibility))),
+    bestPractices: Math.max(0, Math.min(100, Math.round(bestPractices))),
+    seo: Math.max(0, Math.min(100, Math.round(seo)))
+  };
 }
 
 // Helper function to get detailed fix instructions based on agent type and issue
