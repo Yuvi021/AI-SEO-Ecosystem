@@ -11,51 +11,41 @@ export class MetaTagAgent {
     try {
       this.status = 'optimizing';
       
+      // Require OpenAI - no fallback
+      if (!openAIService.isAvailable()) {
+        throw new Error('OpenRouter API key is required for meta tag optimization. Please set OPENROUTER_API_KEY environment variable.');
+      }
+
       const primaryKeyword = keywordAnalysis?.primaryKeywords?.[0]?.word || '';
       const title = crawlData.title || '';
       const currentDescription = crawlData.meta.description || '';
 
-      // Basic optimization
-      const basicTitle = this.optimizeTitle(title, primaryKeyword, crawlData);
-      const basicDescription = this.optimizeMetaDescription(currentDescription, primaryKeyword, crawlData);
-
-      // AI-powered optimization if available
-      let aiTitle = null;
-      let aiDescription = null;
-      
-      if (openAIService.isAvailable()) {
-        try {
-          const aiOptimization = await this.performAIOptimization(
-            crawlData, 
-            primaryKeyword, 
-            title, 
-            currentDescription
-          );
-          aiTitle = aiOptimization.title;
-          aiDescription = aiOptimization.description;
-        } catch (error) {
-          console.warn('AI meta tag optimization failed, using basic optimization:', error.message);
-        }
-      }
+      // AI-powered optimization only
+      const aiOptimization = await this.performAIOptimization(
+        crawlData, 
+        primaryKeyword, 
+        title, 
+        currentDescription
+      );
 
       const optimization = {
         title: {
           current: title,
-          optimized: aiTitle || basicTitle.optimized,
-          aiGenerated: !!aiTitle,
-          length: (aiTitle || basicTitle.optimized).length,
-          status: this.getTitleStatus(aiTitle || basicTitle.optimized),
-          includesKeyword: primaryKeyword ? (aiTitle || basicTitle.optimized).toLowerCase().includes(primaryKeyword.toLowerCase()) : null,
-          suggestions: aiTitle ? ['AI-optimized for maximum CTR'] : basicTitle.suggestions || []
+          optimized: aiOptimization.title,
+          aiGenerated: true,
+          length: aiOptimization.title.length,
+          status: this.getTitleStatus(aiOptimization.title),
+          includesKeyword: primaryKeyword ? aiOptimization.title.toLowerCase().includes(primaryKeyword.toLowerCase()) : null,
+          suggestions: ['AI-optimized for maximum CTR', aiOptimization.titleReason || 'Optimized by AI for better search visibility']
         },
         metaDescription: {
           current: currentDescription,
-          optimized: aiDescription || basicDescription.optimized,
-          aiGenerated: !!aiDescription,
-          length: (aiDescription || basicDescription.optimized).length,
-          status: this.getDescriptionStatus(aiDescription || basicDescription.optimized),
-          includesKeyword: primaryKeyword ? (aiDescription || basicDescription.optimized).toLowerCase().includes(primaryKeyword.toLowerCase()) : null,
-          suggestions: aiDescription ? ['AI-optimized for engagement'] : basicDescription.suggestions || []
+          optimized: aiOptimization.description,
+          aiGenerated: true,
+          length: aiOptimization.description.length,
+          status: this.getDescriptionStatus(aiOptimization.description),
+          includesKeyword: primaryKeyword ? aiOptimization.description.toLowerCase().includes(primaryKeyword.toLowerCase()) : null,
+          suggestions: ['AI-optimized for engagement', aiOptimization.descriptionReason || 'Optimized by AI to improve click-through rates']
         },
         ogTags: this.optimizeOGTags(crawlData, primaryKeyword),
         recommendations: []

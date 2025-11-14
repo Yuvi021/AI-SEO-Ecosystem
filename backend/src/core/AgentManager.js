@@ -248,12 +248,14 @@ export class AgentManager {
         results.crawl = crawlData;
 
         if (onProgress) {
+          const formattedResult = this.agents.report?.formatAgentResultForDisplay('crawl', crawlData);
           onProgress({
             type: 'agent_complete',
             agent: 'crawl',
             message: 'Crawl completed',
             progress: 20,
-            result: crawlData
+            result: crawlData,
+            formatted: formattedResult
           });
         }
       } catch (error) {
@@ -311,28 +313,39 @@ export class AgentManager {
           results[agentName] = result;
 
           if (onProgress) {
+            const formattedResult = this.agents.report?.formatAgentResultForDisplay(agentName, result);
             onProgress({
               type: 'agent_complete',
               agent: agentName,
               message: `${agentName} completed`,
               progress: 50,
-              result
+              result,
+              formatted: formattedResult
             });
           }
         } catch (error) {
           if (onProgress) {
-            onProgress({
-              type: 'agent_error',
-              agent: agentName,
-              message: error.message,
-              progress: 50
-            });
+            try {
+              onProgress({
+                type: 'agent_error',
+                agent: agentName,
+                message: error.message,
+                progress: 50
+              });
+            } catch (progressError) {
+              // If progress callback fails (stream closed), log and continue
+              console.warn(`Failed to send agent error for ${agentName}:`, progressError.message);
+            }
           }
-          throw error;
+          // Log error but don't throw - let other agents continue
+          console.error(`Agent ${agentName} failed:`, error.message);
+          // Store error in results so we know it failed
+          results[agentName] = { error: error.message };
         }
       });
 
-      await Promise.all(parallelPromises);
+      // Use allSettled to handle errors gracefully - don't fail all agents if one fails
+      await Promise.allSettled(parallelPromises);
     }
 
     // Stage 3: Content & Meta Optimization (depend on keyword)
@@ -369,28 +382,44 @@ export class AgentManager {
           results[name] = result;
 
           if (onProgress) {
-            onProgress({
-              type: 'agent_complete',
-              agent: name,
-              message: `${name} completed`,
-              progress: 70,
-              result
-            });
+            try {
+              // Pass crawlData for content agent to get raw content
+              const formattedResult = name === 'content' 
+                ? this.agents.report?.formatAgentResultForDisplay(name, result, crawlData)
+                : this.agents.report?.formatAgentResultForDisplay(name, result);
+              onProgress({
+                type: 'agent_complete',
+                agent: name,
+                message: `${name} completed`,
+                progress: 70,
+                result,
+                formatted: formattedResult
+              });
+            } catch (progressError) {
+              console.warn(`Failed to send progress for ${name}:`, progressError.message);
+            }
           }
         } catch (error) {
           if (onProgress) {
-            onProgress({
-              type: 'agent_error',
-              agent: name,
-              message: error.message,
-              progress: 70
-            });
+            try {
+              onProgress({
+                type: 'agent_error',
+                agent: name,
+                message: error.message,
+                progress: 70
+              });
+            } catch (progressError) {
+              console.warn(`Failed to send agent error for ${name}:`, progressError.message);
+            }
           }
-          throw error;
+          // Log error but don't throw - let other agents continue
+          console.error(`Agent ${name} failed:`, error.message);
+          results[name] = { error: error.message };
         }
       });
 
-      await Promise.all(optimizationPromises);
+      // Use allSettled to handle errors gracefully
+      await Promise.allSettled(optimizationPromises);
     }
 
     // Stage 4: Validation
@@ -415,12 +444,14 @@ export class AgentManager {
         results.validation = validation;
 
         if (onProgress) {
+          const formattedResult = this.agents.report?.formatAgentResultForDisplay('validation', validation);
           onProgress({
             type: 'agent_complete',
             agent: 'validation',
             message: 'Validation completed',
             progress: 85,
-            result: validation
+            result: validation,
+            formatted: formattedResult
           });
         }
       } catch (error) {

@@ -10,6 +10,11 @@ export class KeywordIntelligenceAgent {
     try {
       this.status = 'analyzing';
       
+      // Require OpenAI - no fallback
+      if (!openAIService.isAvailable()) {
+        throw new Error('OpenRouter API key is required for keyword analysis. Please set OPENROUTER_API_KEY environment variable.');
+      }
+
       const text = crawlData.content.text.toLowerCase();
       const title = crawlData.title.toLowerCase();
       const headings = [
@@ -18,40 +23,31 @@ export class KeywordIntelligenceAgent {
         ...crawlData.headings.h3
       ].map(h => h.toLowerCase());
 
-      // Basic keyword extraction (fallback)
-      const basicAnalysis = this.performBasicAnalysis(crawlData, text, title, headings);
+      // AI-powered analysis only
+      const aiAnalysis = await this.performAIAnalysis(crawlData, text, title, headings);
 
-      // Enhanced AI-powered analysis if available
-      let aiAnalysis = null;
-      if (openAIService.isAvailable()) {
-        try {
-          aiAnalysis = await this.performAIAnalysis(crawlData, text, title, headings);
-        } catch (error) {
-          console.warn('AI analysis failed, using basic analysis:', error.message);
-        }
-      }
-
-      // Merge AI and basic analysis
-      const mergedAnalysis = {
-        primaryKeywords: aiAnalysis?.primaryKeywords || basicAnalysis.primaryKeywords,
-        allKeywords: aiAnalysis?.allKeywords || basicAnalysis.allKeywords,
-        keywordDensity: basicAnalysis.keywordDensity,
-        missingKeywords: aiAnalysis?.missingKeywords || basicAnalysis.missingKeywords,
-        longTailSuggestions: aiAnalysis?.longTailSuggestions || basicAnalysis.longTailSuggestions,
-        semanticKeywords: aiAnalysis?.semanticKeywords || [],
-        searchIntent: aiAnalysis?.searchIntent || null,
-        competitiveKeywords: aiAnalysis?.competitiveKeywords || [],
-        keywordGaps: aiAnalysis?.keywordGaps || [],
-        titleKeywordUsage: basicAnalysis.titleKeywordUsage
-      };
+      // Calculate keyword density from AI results
+      const keywordDensity = this.calculateKeywordDensityFromAI(aiAnalysis, crawlData);
 
       const analysis = {
-        ...mergedAnalysis,
+        primaryKeywords: aiAnalysis.primaryKeywords || [],
+        allKeywords: aiAnalysis.primaryKeywords || [],
+        keywordDensity: keywordDensity,
+        missingKeywords: aiAnalysis.missingKeywords || [],
+        longTailSuggestions: aiAnalysis.longTailSuggestions || [],
+        semanticKeywords: aiAnalysis.semanticKeywords || [],
+        searchIntent: aiAnalysis.searchIntent || null,
+        competitiveKeywords: aiAnalysis.competitiveKeywords || [],
+        keywordGaps: aiAnalysis.keywordGaps || [],
+        titleKeywordUsage: {
+          present: [],
+          missing: aiAnalysis.missingKeywords || []
+        },
         recommendations: this.generateRecommendations({
-          topKeywords: mergedAnalysis.primaryKeywords,
-          missingKeywords: mergedAnalysis.missingKeywords,
-          keywordDensity: basicAnalysis.keywordDensity,
-          titleKeywords: basicAnalysis.titleKeywords,
+          topKeywords: aiAnalysis.primaryKeywords || [],
+          missingKeywords: aiAnalysis.missingKeywords || [],
+          keywordDensity: keywordDensity,
+          titleKeywords: [],
           aiInsights: aiAnalysis
         })
       };
@@ -62,6 +58,32 @@ export class KeywordIntelligenceAgent {
       this.status = 'error';
       throw new Error(`Keyword analysis failed: ${error.message}`);
     }
+  }
+
+  calculateKeywordDensityFromAI(aiAnalysis, crawlData) {
+    const density = {};
+    const wordCount = crawlData.content.wordCount || 1;
+    const text = crawlData.content.text.toLowerCase();
+
+    if (aiAnalysis.primaryKeywords && aiAnalysis.primaryKeywords.length > 0) {
+      aiAnalysis.primaryKeywords.forEach(kw => {
+        const keyword = typeof kw === 'string' ? kw : kw.word;
+        if (keyword) {
+          const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'gi');
+          const matches = text.match(regex);
+          const count = matches ? matches.length : 0;
+          if (count > 0) {
+            density[keyword] = {
+              count,
+              density: ((count / wordCount) * 100).toFixed(2),
+              recommendation: count < 3 ? 'increase' : count > 10 ? 'decrease' : 'optimal'
+            };
+          }
+        }
+      });
+    }
+
+    return density;
   }
 
   async performAIAnalysis(crawlData, text, title, headings) {
@@ -112,99 +134,6 @@ Format your response as JSON with this structure:
     return aiResponse;
   }
 
-  performBasicAnalysis(crawlData, text, title, headings) {
-    // Extract keywords from content
-    const words = text.split(/\s+/).filter(w => w.length > 3);
-    const wordFreq = {};
-    words.forEach(word => {
-      wordFreq[word] = (wordFreq[word] || 0) + 1;
-    });
-
-    const topKeywords = Object.entries(wordFreq)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 20)
-      .map(([word, count]) => ({ word, count, density: (count / words.length * 100).toFixed(2) }));
-
-    // Analyze keyword gaps
-    const titleKeywords = this.extractKeywords(title);
-    const headingKeywords = this.extractKeywords(headings.join(' '));
-    const contentKeywords = this.extractKeywords(text);
-
-    // Find missing keywords in content
-    const missingKeywords = titleKeywords.filter(kw => 
-      !contentKeywords.includes(kw) && kw.length > 3
-    );
-
-    // Generate long-tail keyword suggestions
-    const longTailKeywords = this.generateLongTailKeywords(titleKeywords, contentKeywords);
-
-    // Keyword density analysis
-    const keywordDensity = this.calculateKeywordDensity(crawlData);
-
-    return {
-      primaryKeywords: topKeywords.slice(0, 5),
-      allKeywords: topKeywords,
-      keywordDensity,
-      missingKeywords: missingKeywords.slice(0, 10),
-      longTailSuggestions: longTailKeywords.slice(0, 10),
-      titleKeywords,
-      titleKeywordUsage: {
-        present: titleKeywords.filter(kw => contentKeywords.includes(kw)),
-        missing: titleKeywords.filter(kw => !contentKeywords.includes(kw))
-      }
-    };
-  }
-
-  extractKeywords(text) {
-    // Remove common stop words
-    const stopWords = new Set(['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'who', 'way', 'use', 'man', 'men', 'any', 'she', 'put', 'say', 'she', 'too', 'use']);
-    
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(word => word.length > 3 && !stopWords.has(word));
-  }
-
-  generateLongTailKeywords(primaryKeywords, contentKeywords) {
-    const longTail = [];
-    const phrases = primaryKeywords.slice(0, 5);
-    
-    phrases.forEach(phrase => {
-      longTail.push(`${phrase} guide`);
-      longTail.push(`best ${phrase}`);
-      longTail.push(`${phrase} tips`);
-      longTail.push(`how to ${phrase}`);
-      longTail.push(`${phrase} examples`);
-      longTail.push(`${phrase} benefits`);
-    });
-
-    return [...new Set(longTail)];
-  }
-
-  calculateKeywordDensity(crawlData) {
-    const wordCount = crawlData.content.wordCount;
-    if (wordCount === 0) return {};
-
-    const text = crawlData.content.text.toLowerCase();
-    const titleWords = crawlData.title.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    
-    const density = {};
-    titleWords.forEach(word => {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      const matches = text.match(regex);
-      const count = matches ? matches.length : 0;
-      if (count > 0) {
-        density[word] = {
-          count,
-          density: ((count / wordCount) * 100).toFixed(2),
-          recommendation: count < 3 ? 'increase' : count > 10 ? 'decrease' : 'optimal'
-        };
-      }
-    });
-
-    return density;
-  }
 
   generateRecommendations(data) {
     const recommendations = [];

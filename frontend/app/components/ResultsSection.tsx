@@ -3,6 +3,121 @@
 import { useState } from 'react';
 import { AGENTS } from '../lib/constants';
 
+// Component to display formatted agent results
+function AgentResultDisplay({ result, agentId }: { result: any; agentId: string }) {
+  // Check if we have formatted data
+  const formatted = result?.formatted || result;
+  
+  // If it's already formatted (has title, description, etc.)
+  if (formatted?.title && formatted?.description) {
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-cyan-200 dark:border-cyan-800">
+          <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            {formatted.title}
+          </h5>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {formatted.description}
+          </p>
+        </div>
+
+        {/* Summary */}
+        {formatted.summary && (
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Summary
+            </h6>
+            <div className="space-y-2 text-sm">
+              {typeof formatted.summary === 'object' ? (
+                <div className="space-y-2">
+                  {Object.entries(formatted.summary).map(([key, value]) => (
+                    <div key={key} className="flex justify-between items-start">
+                      <span className="text-gray-600 dark:text-gray-400 capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').trim()}:
+                      </span>
+                      <span className="text-gray-900 dark:text-white font-medium text-right ml-4">
+                        {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-900 dark:text-white">{formatted.summary}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Issues */}
+        {formatted.issues && formatted.issues.length > 0 && (
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+            <h6 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Issues Found
+            </h6>
+            <ul className="space-y-2">
+              {formatted.issues.map((issue: string, idx: number) => (
+                <li key={idx} className="text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
+                  <span className="text-red-500 mt-0.5">•</span>
+                  <span>{issue}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {formatted.recommendations && formatted.recommendations.length > 0 && (
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+            <h6 className="text-sm font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              How to Fix
+            </h6>
+            <ul className="space-y-2">
+              {formatted.recommendations.map((rec: string, idx: number) => (
+                <li key={idx} className="text-sm text-green-700 dark:text-green-300 flex items-start gap-2">
+                  <span className="text-green-500 mt-0.5">✓</span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Status Badge */}
+        {formatted.status && (
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              formatted.status === 'good' 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+            }`}>
+              {formatted.status === 'good' ? '✓ All Good' : '⚠ Needs Attention'}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback to JSON display for unformatted results
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 max-h-96 overflow-auto">
+      <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words font-mono leading-relaxed">
+        {JSON.stringify(result, null, 2)}
+      </pre>
+    </div>
+  );
+}
+
 interface ResultsSectionProps {
   results: Record<string, Record<string, any>>;
 }
@@ -145,11 +260,7 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
                       
                       {isExpanded && (
                         <div className="px-4 pb-4 animate-fade-in">
-                          <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 max-h-96 overflow-auto">
-                            <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words font-mono leading-relaxed">
-                              {JSON.stringify(result, null, 2)}
-                            </pre>
-                          </div>
+                          <AgentResultDisplay result={result} agentId={agentId} />
                         </div>
                       )}
                     </div>

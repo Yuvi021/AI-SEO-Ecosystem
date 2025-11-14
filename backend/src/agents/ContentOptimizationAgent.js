@@ -10,35 +10,33 @@ export class ContentOptimizationAgent {
     try {
       this.status = 'optimizing';
       
-      // Basic analysis
-      const basicOptimization = {
-        readability: this.analyzeReadability(crawlData),
-        structure: this.analyzeStructure(crawlData),
-        keywordPlacement: this.analyzeKeywordPlacement(crawlData, keywordAnalysis),
-        internalLinking: this.analyzeInternalLinking(crawlData),
-        recommendations: []
-      };
-
-      // AI-powered optimization if available
-      let aiOptimization = null;
-      if (openAIService.isAvailable()) {
-        try {
-          aiOptimization = await this.performAIOptimization(crawlData, keywordAnalysis);
-        } catch (error) {
-          console.warn('AI optimization failed, using basic analysis:', error.message);
-        }
+      // Require OpenAI - no fallback
+      if (!openAIService.isAvailable()) {
+        throw new Error('OpenRouter API key is required for content optimization. Please set OPENROUTER_API_KEY environment variable.');
       }
 
-      // Merge results
+      // AI-powered optimization only
+      const aiOptimization = await this.performAIOptimization(crawlData, keywordAnalysis);
+
+      // Extract readability metrics from AI analysis
+      const readability = this.extractReadabilityFromAI(aiOptimization, crawlData);
+      const structure = this.extractStructureFromAI(aiOptimization, crawlData);
+      const keywordPlacement = this.extractKeywordPlacementFromAI(aiOptimization, crawlData, keywordAnalysis);
+
+      const internalLinking = this.analyzeInternalLinking(crawlData);
+      
       const optimization = {
-        ...basicOptimization,
-        aiSuggestions: aiOptimization?.suggestions || null,
-        contentQuality: aiOptimization?.quality || null,
-        engagementTips: aiOptimization?.engagementTips || [],
-        readabilityImprovements: aiOptimization?.readabilityImprovements || [],
-        structureRecommendations: aiOptimization?.structureRecommendations || [],
+        readability: readability,
+        structure: structure,
+        keywordPlacement: keywordPlacement,
+        internalLinking: internalLinking,
+        aiSuggestions: aiOptimization.suggestions || null,
+        contentQuality: aiOptimization.quality || null,
+        engagementTips: aiOptimization.engagementTips || [],
+        readabilityImprovements: aiOptimization.readabilityImprovements || [],
+        structureRecommendations: aiOptimization.structureRecommendations || [],
         recommendations: this.generateRecommendations(
-          basicOptimization, 
+          { readability, structure, keywordPlacement, internalLinking }, 
           crawlData, 
           keywordAnalysis,
           aiOptimization
@@ -51,6 +49,88 @@ export class ContentOptimizationAgent {
       this.status = 'error';
       throw new Error(`Content optimization failed: ${error.message}`);
     }
+  }
+
+  extractReadabilityFromAI(aiOptimization, crawlData) {
+    // Use AI analysis for readability, fallback to basic calculation only for metrics
+    const text = crawlData.content.text;
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const paragraphs = crawlData.content.paragraphs;
+    const avgSentenceLength = words.length / sentences.length || 0;
+    const avgParagraphLength = paragraphs.reduce((sum, p) => sum + p.split(/\s+/).length, 0) / paragraphs.length || 0;
+    const avgWordsPerSentence = words.length / sentences.length || 0;
+    const avgSyllablesPerWord = this.estimateSyllables(words.join(' '));
+    const fleschScore = 206.835 - (1.015 * avgWordsPerSentence) - (84.6 * avgSyllablesPerWord);
+
+    return {
+      wordCount: crawlData.content.wordCount,
+      sentenceCount: sentences.length,
+      paragraphCount: paragraphs.length,
+      avgSentenceLength: avgSentenceLength.toFixed(1),
+      avgParagraphLength: avgParagraphLength.toFixed(1),
+      fleschScore: fleschScore.toFixed(1),
+      readability: fleschScore >= 60 ? 'good' : fleschScore >= 30 ? 'fair' : 'difficult',
+      score: fleschScore,
+      aiImprovements: aiOptimization.readabilityImprovements || []
+    };
+  }
+
+  extractStructureFromAI(aiOptimization, crawlData) {
+    const structure = {
+      hasH1: crawlData.headings.h1.length > 0,
+      h1Count: crawlData.headings.h1.length,
+      h2Count: crawlData.headings.h2.length,
+      h3Count: crawlData.headings.h3.length,
+      headingHierarchy: true,
+      issues: []
+    };
+
+    // Use AI recommendations for structure issues
+    if (aiOptimization.structureRecommendations && aiOptimization.structureRecommendations.length > 0) {
+      structure.issues = aiOptimization.structureRecommendations;
+    } else {
+      // Basic checks only if AI didn't provide recommendations
+      if (structure.h1Count === 0) {
+        structure.issues.push('Missing H1 tag');
+        structure.headingHierarchy = false;
+      }
+      if (structure.h1Count > 1) {
+        structure.issues.push('Multiple H1 tags found (should have only one)');
+        structure.headingHierarchy = false;
+      }
+    }
+
+    return structure;
+  }
+
+  extractKeywordPlacementFromAI(aiOptimization, crawlData, keywordAnalysis) {
+    if (!keywordAnalysis?.primaryKeywords?.length) {
+      return { score: 0, issues: ['No keywords to analyze'] };
+    }
+
+    const primaryKeyword = keywordAnalysis.primaryKeywords[0]?.word || '';
+    const text = crawlData.content.text.toLowerCase();
+    const firstParagraph = crawlData.content.paragraphs[0]?.toLowerCase() || '';
+    
+    const placement = {
+      inTitle: crawlData.title.toLowerCase().includes(primaryKeyword),
+      inFirstParagraph: firstParagraph.includes(primaryKeyword),
+      inH1: crawlData.headings.h1.some(h => h.toLowerCase().includes(primaryKeyword)),
+      inH2: crawlData.headings.h2.some(h => h.toLowerCase().includes(primaryKeyword)),
+      inMetaDescription: (crawlData.meta.description || '').toLowerCase().includes(primaryKeyword),
+      frequency: (text.match(new RegExp(primaryKeyword, 'gi')) || []).length
+    };
+
+    const score = Object.values(placement).filter(v => v === true || (typeof v === 'number' && v > 0)).length;
+    const issues = [];
+
+    if (!placement.inTitle) issues.push('Primary keyword not in title');
+    if (!placement.inFirstParagraph) issues.push('Primary keyword not in first paragraph');
+    if (!placement.inH1 && !placement.inH2) issues.push('Primary keyword not in headings');
+    if (placement.frequency < 3) issues.push('Primary keyword used too infrequently');
+
+    return { score, issues };
   }
 
   async performAIOptimization(crawlData, keywordAnalysis) {
@@ -251,7 +331,7 @@ Format as JSON:
     }
 
     // Basic recommendations
-    if (optimization.readability.score < 30) {
+    if (optimization.readability?.score < 30) {
       recommendations.push({
         type: 'readability',
         priority: 'high',
@@ -260,7 +340,7 @@ Format as JSON:
       });
     }
 
-    if (!optimization.structure.hasH1) {
+    if (!optimization.structure?.hasH1) {
       recommendations.push({
         type: 'structure',
         priority: 'critical',
@@ -269,7 +349,7 @@ Format as JSON:
       });
     }
 
-    if (optimization.structure.h1Count > 1) {
+    if (optimization.structure?.h1Count > 1) {
       recommendations.push({
         type: 'structure',
         priority: 'high',
@@ -278,7 +358,7 @@ Format as JSON:
       });
     }
 
-    if (optimization.keywordPlacement.score < 3) {
+    if (optimization.keywordPlacement?.score < 3) {
       recommendations.push({
         type: 'keyword_placement',
         priority: 'high',
@@ -287,7 +367,7 @@ Format as JSON:
       });
     }
 
-    if (optimization.internalLinking.recommendation === 'increase') {
+    if (optimization.internalLinking?.recommendation === 'increase') {
       recommendations.push({
         type: 'internal_linking',
         priority: 'medium',

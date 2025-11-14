@@ -1,19 +1,24 @@
 import OpenAI from 'openai';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export class OpenAIService {
   constructor() {
     this.client = null;
+    this.defaultModel = 'openai/gpt-4o'; // OpenRouter model
     this.initialize();
   }
 
   initialize() {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    console.log('apiKey', apiKey);
     if (apiKey) {
       this.client = new OpenAI({
         apiKey: apiKey,
+        baseURL: 'https://openrouter.ai/api/v1',
       });
     } else {
-      console.warn('⚠️  OPENAI_API_KEY not found. AI features will be limited.');
+      console.warn('⚠️  OPENROUTER_API_KEY not found. AI features will be limited.');
     }
   }
 
@@ -23,19 +28,19 @@ export class OpenAIService {
 
   async generateText(prompt, options = {}) {
     if (!this.isAvailable()) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error('OpenRouter API key not configured');
     }
 
     const {
-      model = 'gpt-4-turbo-preview',
+      model = this.defaultModel,
       temperature = 0.7,
-      maxTokens = 1000,
+      maxTokens = 80000,
       systemPrompt = null,
     } = options;
 
     try {
       const messages = [];
-      
+
       if (systemPrompt) {
         messages.push({
           role: 'system',
@@ -57,18 +62,18 @@ export class OpenAIService {
 
       return response.choices[0]?.message?.content?.trim() || '';
     } catch (error) {
-      console.error('OpenAI API Error:', error.message);
-      throw new Error(`OpenAI API call failed: ${error.message}`);
+      console.error('OpenRouter API Error:', error.message);
+      throw new Error(`OpenRouter API call failed: ${error.message}`);
     }
   }
 
   async generateJSON(prompt, schema, options = {}) {
     if (!this.isAvailable()) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error('OpenRouter API key not configured');
     }
 
     const {
-      model = 'gpt-4-turbo-preview',
+      model = this.defaultModel,
       temperature = 0.3,
       systemPrompt = 'You are a JSON generator. Always return valid JSON only, no additional text.',
     } = options;
@@ -91,14 +96,88 @@ export class OpenAIService {
         model,
         messages,
         temperature,
-        response_format: { type: 'json_object' },
+        // Note: Not all OpenRouter models support response_format
+        // Remove this line if your model doesn't support it
+        // response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content?.trim() || '{}';
-      return JSON.parse(content);
+      let jsonContent = content;
+      
+      // Remove markdown code block markers if present
+      if (content.includes('```')) {
+        // Extract content between ```json and ``` or ``` and ```
+        const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (codeBlockMatch) {
+          jsonContent = codeBlockMatch[1].trim();
+        } else {
+          // Try to remove just the markers
+          jsonContent = content.replace(/^```(?:json)?\s*/m, '').replace(/\s*```$/m, '').trim();
+        }
+      }
+
+      // Try to find the first valid JSON object or array
+      // Track both braces and brackets to handle nested structures
+      let startIdx = -1;
+      let braceDepth = 0;
+      let bracketDepth = 0;
+      let inString = false;
+      let escapeNext = false;
+      
+      for (let i = 0; i < jsonContent.length; i++) {
+        const char = jsonContent[i];
+        
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escapeNext = true;
+          continue;
+        }
+        
+        if (char === '"' && !escapeNext) {
+          inString = !inString;
+          continue;
+        }
+        
+        if (!inString) {
+          if (char === '{') {
+            if (startIdx === -1) startIdx = i;
+            braceDepth++;
+          } else if (char === '}') {
+            braceDepth--;
+            if (braceDepth === 0 && bracketDepth === 0 && startIdx !== -1) {
+              jsonContent = jsonContent.substring(startIdx, i + 1);
+              break;
+            }
+          } else if (char === '[') {
+            if (startIdx === -1) startIdx = i;
+            bracketDepth++;
+          } else if (char === ']') {
+            bracketDepth--;
+            if (bracketDepth === 0 && braceDepth === 0 && startIdx !== -1) {
+              jsonContent = jsonContent.substring(startIdx, i + 1);
+              break;
+            }
+          }
+        }
+      }
+
+      // Final cleanup
+      jsonContent = jsonContent.trim();
+
+      try {
+        return JSON.parse(jsonContent);
+      } catch (parseError) {
+        console.error('JSON Parse Error. Raw content:', content.substring(0, 500));
+        console.error('Extracted JSON:', jsonContent.substring(0, 500));
+        throw new Error(`Failed to parse JSON response: ${parseError.message}`);
+      }
     } catch (error) {
-      console.error('OpenAI JSON Generation Error:', error.message);
-      throw new Error(`OpenAI JSON generation failed: ${error.message}`);
+      console.error('OpenRouter JSON Generation Error:', error.message);
+      throw new Error(`OpenRouter JSON generation failed: ${error.message}`);
     }
   }
 
@@ -160,4 +239,3 @@ Provide specific, actionable feedback.`,
 }
 
 export const openAIService = new OpenAIService();
-

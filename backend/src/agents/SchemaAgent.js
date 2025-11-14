@@ -10,6 +10,11 @@ export class SchemaAgent {
     try {
       this.status = 'analyzing';
       
+      // Require OpenAI - no fallback
+      if (!openAIService.isAvailable()) {
+        throw new Error('OpenRouter API key is required for schema generation. Please set OPENROUTER_API_KEY environment variable.');
+      }
+
       const analysis = {
         existing: crawlData.schema || [],
         detected: this.detectSchemaTypes(crawlData.schema),
@@ -18,20 +23,10 @@ export class SchemaAgent {
         aiGenerated: null
       };
 
-      // Basic schema generation
-      const basicSchemas = this.generateRecommendedSchema(crawlData);
-
-      // AI-powered schema generation if available
-      if (openAIService.isAvailable()) {
-        try {
-          const aiSchemas = await this.performAISchemaGeneration(crawlData);
-          analysis.aiGenerated = aiSchemas;
-        } catch (error) {
-          console.warn('AI schema generation failed, using basic schema:', error.message);
-        }
-      }
-
-      analysis.generated = analysis.aiGenerated || basicSchemas;
+      // AI-powered schema generation only
+      const aiSchemas = await this.performAISchemaGeneration(crawlData);
+      analysis.aiGenerated = aiSchemas;
+      analysis.generated = aiSchemas;
       analysis.recommendations = this.generateSchemaRecommendations(crawlData, analysis.generated);
 
       this.status = 'ready';

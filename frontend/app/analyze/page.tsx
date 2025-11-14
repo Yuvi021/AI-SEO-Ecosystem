@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import AgentSelection from '../components/AgentSelection';
 import ProgressSection from '../components/ProgressSection';
 import ResultsSection from '../components/ResultsSection';
+import SEODashboard from '../components/SEODashboard';
 import ThemeToggle from '../components/ThemeToggle';
 import { AGENTS, API_URL } from '../lib/constants';
 
@@ -24,6 +25,8 @@ export default function AnalyzePage() {
   }>>([]);
   const [results, setResults] = useState<Record<string, any>>({});
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [viewMode, setViewMode] = useState<'detailed' | 'dashboard'>('detailed');
+  const [openAIError, setOpenAIError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -63,6 +66,7 @@ export default function AnalyzePage() {
     setProgressMessage('Initializing...');
     setLogEntries([]);
     setResults({});
+    setOpenAIError(null);
 
     // Close previous connection if exists
     if (eventSourceRef.current) {
@@ -115,21 +119,37 @@ export default function AnalyzePage() {
 
       case 'agent_complete':
         addLogEntry('success', `${agent} completed`);
-        if (result) {
-          const urlKey = result.url || data.url || 'default';
+        if (result || data.formatted) {
+          const urlKey = result?.url || data.url || 'default';
           setResults(prev => ({
             ...prev,
             [urlKey]: {
               ...prev[urlKey],
-              [agent]: result,
+              [agent]: {
+                ...result,
+                formatted: data.formatted
+              },
             },
           }));
         }
         break;
 
-      case 'agent_error':
-        addLogEntry('error', `${agent} failed: ${message}`);
+      case 'agent_error': {
+        const errorMessage = message || 'Unknown error occurred';
+        const isOpenAIError = errorMessage.toLowerCase().includes('openai') || 
+                              errorMessage.toLowerCase().includes('openrouter') ||
+                              errorMessage.toLowerCase().includes('api key') ||
+                              errorMessage.toLowerCase().includes('required');
+        
+        if (isOpenAIError) {
+          const errorMsg = `⚠️ ${agent} requires OpenRouter API key: ${errorMessage}`;
+          addLogEntry('error', errorMsg);
+          setOpenAIError(errorMsg);
+        } else {
+          addLogEntry('error', `${agent} failed: ${errorMessage}`);
+        }
         break;
+      }
 
       case 'url_processing':
         addLogEntry('info', `Processing URL: ${message}`);
@@ -150,14 +170,27 @@ export default function AnalyzePage() {
         }
         break;
 
-      case 'error':
-        addLogEntry('error', `Error: ${message}`);
+      case 'error': {
+        const errorMsg = message || 'An error occurred during analysis';
+        const isOpenAIError = errorMsg.toLowerCase().includes('openai') || 
+                              errorMsg.toLowerCase().includes('openrouter') ||
+                              errorMsg.toLowerCase().includes('api key') ||
+                              errorMsg.toLowerCase().includes('required');
+        
+        if (isOpenAIError) {
+          const errorMessage = `⚠️ OpenRouter API key is required. Please set OPENROUTER_API_KEY environment variable on the server.`;
+          addLogEntry('error', errorMessage);
+          setOpenAIError(errorMessage);
+        } else {
+          addLogEntry('error', `Error: ${errorMsg}`);
+        }
         setIsAnalyzing(false);
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
           eventSourceRef.current = null;
         }
         break;
+      }
     }
   };
 
@@ -486,6 +519,50 @@ export default function AnalyzePage() {
           </div>
         </div>
 
+        {/* OpenAI Error Banner */}
+        {openAIError && (
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700 rounded-xl p-6 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-red-900 dark:text-red-300 mb-2">
+                    OpenRouter API Key Required
+                  </h3>
+                  <p className="text-red-800 dark:text-red-400 mb-4">
+                    {openAIError}
+                  </p>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-800">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">To fix this:</p>
+                    <ol className="text-sm text-gray-700 dark:text-gray-300 space-y-1 list-decimal list-inside">
+                      <li>Set the <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">OPENROUTER_API_KEY</code> environment variable on your server</li>
+                      <li>Restart the backend server</li>
+                      <li>Try the analysis again</li>
+                    </ol>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setOpenAIError(null)}
+                  className="flex-shrink-0 text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Progress Section */}
         {(isAnalyzing || logEntries.length > 0) && (
           <motion.div 
@@ -502,6 +579,44 @@ export default function AnalyzePage() {
           </motion.div>
         )}
 
+        {/* View Mode Toggle */}
+        {Object.keys(results).length > 0 && (
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">View Report</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewMode('dashboard')}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                      viewMode === 'dashboard'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    📊 Dashboard View
+                  </button>
+                  <button
+                    onClick={() => setViewMode('detailed')}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                      viewMode === 'detailed'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    📋 Detailed View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Results Section */}
         {Object.keys(results).length > 0 && (
           <motion.div 
@@ -510,7 +625,11 @@ export default function AnalyzePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <ResultsSection results={results} />
+            {viewMode === 'dashboard' ? (
+              <SEODashboard results={results} url={url} />
+            ) : (
+              <ResultsSection results={results} />
+            )}
           </motion.div>
         )}
 

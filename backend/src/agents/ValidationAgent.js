@@ -10,39 +10,46 @@ export class ValidationAgent {
     try {
       this.status = 'validating';
       
-      // Basic validation
-      const basicValidation = {
-        uniqueness: this.validateUniqueness(results),
-        seoCompliance: this.validateSEOCompliance(results),
-        consistency: this.validateConsistency(results),
-        quality: this.validateQuality(results),
-        overall: 'pass',
-        issues: []
-      };
-
-      // AI-powered quality validation if available
-      let aiValidation = null;
-      if (openAIService.isAvailable()) {
-        try {
-          aiValidation = await this.performAIValidation(results);
-        } catch (error) {
-          console.warn('AI validation failed, using basic validation:', error.message);
-        }
+      // Require OpenAI - no fallback
+      if (!openAIService.isAvailable()) {
+        throw new Error('OpenRouter API key is required for validation. Please set OPENROUTER_API_KEY environment variable.');
       }
 
-      // Merge validations
+      // AI-powered quality validation only
+      const aiValidation = await this.performAIValidation(results);
+
+      // Extract basic metrics from results for structure
+      const crawlData = results.crawl || {};
+      const keywordAnalysis = results.keyword || {};
+      const contentOptimization = results.content || {};
+      const metaOptimization = results.meta || {};
+
+      // Build validation structure from AI results
       const validation = {
-        ...basicValidation,
-        aiQuality: aiValidation?.quality || null,
-        aiRecommendations: aiValidation?.recommendations || [],
-        overall: this.determineOverallStatus(basicValidation, aiValidation),
+        uniqueness: {
+          score: aiValidation.quality?.score >= 70 ? 'good' : 'needs-improvement',
+          issues: aiValidation.criticalIssues?.filter(i => i.toLowerCase().includes('unique') || i.toLowerCase().includes('duplicate')) || []
+        },
+        seoCompliance: {
+          critical: aiValidation.criticalIssues || [],
+          warnings: aiValidation.recommendations?.filter(r => r.priority === 'high').map(r => r.issue) || []
+        },
+        consistency: {
+          issues: aiValidation.recommendations?.filter(r => r.priority === 'medium').map(r => r.issue) || []
+        },
+        quality: {
+          score: aiValidation.quality?.score || 0,
+          grade: aiValidation.quality?.grade || 'F',
+          strengths: aiValidation.quality?.strengths || [],
+          weaknesses: aiValidation.quality?.weaknesses || [],
+          issues: aiValidation.quality?.weaknesses || []
+        },
+        aiQuality: aiValidation.quality || null,
+        aiRecommendations: aiValidation.recommendations || [],
+        overall: this.determineOverallStatusFromAI(aiValidation),
         issues: [
-          ...basicValidation.uniqueness.issues,
-          ...basicValidation.seoCompliance.critical,
-          ...basicValidation.seoCompliance.warnings,
-          ...basicValidation.consistency.issues,
-          ...basicValidation.quality.issues,
-          ...(aiValidation?.criticalIssues || [])
+          ...(aiValidation.criticalIssues || []),
+          ...(aiValidation.recommendations?.map(r => r.issue) || [])
         ]
       };
 
@@ -51,6 +58,21 @@ export class ValidationAgent {
     } catch (error) {
       this.status = 'error';
       throw new Error(`Validation failed: ${error.message}`);
+    }
+  }
+
+  determineOverallStatusFromAI(aiValidation) {
+    const hasCritical = aiValidation.criticalIssues && aiValidation.criticalIssues.length > 0;
+    const score = aiValidation.quality?.score || 0;
+    
+    if (hasCritical) {
+      return 'fail';
+    } else if (score >= 80) {
+      return 'pass';
+    } else if (score >= 60) {
+      return 'warning';
+    } else {
+      return 'fail';
     }
   }
 

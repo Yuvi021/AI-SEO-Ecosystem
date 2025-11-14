@@ -39,9 +39,22 @@ export function apiRoutes(agentManager) {
     // Parse selected agents
     const selectedAgents = agents ? agents.split(',').filter(Boolean) : [];
 
+    // Track if response is still open
+    let isResponseOpen = true;
+
     // Progress callback function
     const sendProgress = (data) => {
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      if (!isResponseOpen || res.writableEnded || res.destroyed) {
+        return; // Don't write if response is closed
+      }
+      
+      try {
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+      } catch (error) {
+        // If write fails, mark as closed
+        isResponseOpen = false;
+        console.warn('Failed to send progress update:', error.message);
+      }
     };
 
     try {
@@ -99,13 +112,26 @@ export function apiRoutes(agentManager) {
       });
 
     } catch (error) {
-      sendProgress({
-        type: 'error',
-        message: error.message,
-        progress: 0
-      });
+      if (isResponseOpen && !res.writableEnded && !res.destroyed) {
+        try {
+          sendProgress({
+            type: 'error',
+            message: error.message,
+            progress: 0
+          });
+        } catch (writeError) {
+          console.warn('Failed to send error message:', writeError.message);
+        }
+      }
     } finally {
-      res.end();
+      if (isResponseOpen && !res.writableEnded && !res.destroyed) {
+        isResponseOpen = false;
+        try {
+          res.end();
+        } catch (endError) {
+          console.warn('Failed to end response:', endError.message);
+        }
+      }
     }
   });
 

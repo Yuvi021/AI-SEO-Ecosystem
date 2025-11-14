@@ -10,30 +10,23 @@ export class TechnicalSEOAgent {
     try {
       this.status = 'analyzing';
       
-      // Basic analysis
-      const basicAnalysis = {
-        performance: this.analyzePerformance(crawlData),
-        mobile: this.analyzeMobile(crawlData),
-        accessibility: this.analyzeAccessibility(crawlData),
-        security: this.analyzeSecurity(crawlData),
-        coreWebVitals: this.estimateCoreWebVitals(crawlData),
-        recommendations: []
-      };
-
-      // AI-powered technical recommendations if available
-      let aiRecommendations = [];
-      if (openAIService.isAvailable()) {
-        try {
-          aiRecommendations = await this.performAITechnicalAnalysis(crawlData, basicAnalysis);
-        } catch (error) {
-          console.warn('AI technical analysis failed, using basic analysis:', error.message);
-        }
+      // Require OpenAI - no fallback
+      if (!openAIService.isAvailable()) {
+        throw new Error('OpenRouter API key is required for technical SEO analysis. Please set OPENROUTER_API_KEY environment variable.');
       }
 
+      // AI-powered technical analysis only
+      const aiAnalysis = await this.performAITechnicalAnalysis(crawlData);
+
+      // Extract structured data from AI analysis
       const analysis = {
-        ...basicAnalysis,
-        aiRecommendations: aiRecommendations,
-        recommendations: this.generateRecommendations(basicAnalysis, aiRecommendations)
+        performance: this.extractPerformanceFromAI(aiAnalysis, crawlData),
+        mobile: this.extractMobileFromAI(aiAnalysis, crawlData),
+        accessibility: this.extractAccessibilityFromAI(aiAnalysis, crawlData),
+        security: this.extractSecurityFromAI(aiAnalysis, crawlData),
+        coreWebVitals: this.extractCoreWebVitalsFromAI(aiAnalysis, crawlData),
+        aiRecommendations: aiAnalysis,
+        recommendations: this.generateRecommendationsFromAI(aiAnalysis)
       };
 
       this.status = 'ready';
@@ -44,25 +37,90 @@ export class TechnicalSEOAgent {
     }
   }
 
-  async performAITechnicalAnalysis(crawlData, basicAnalysis) {
-    const prompt = `Analyze this webpage for technical SEO issues and provide specific recommendations:
+  extractPerformanceFromAI(aiAnalysis, crawlData) {
+    const performanceIssues = aiAnalysis.filter(r => r.type === 'performance').map(r => r.issue);
+    return {
+      hasViewport: !!crawlData.meta.viewport,
+      hasCharset: !!crawlData.html.charset,
+      hasLang: !!crawlData.html.lang,
+      imageCount: crawlData.images.length,
+      totalImages: crawlData.images.length,
+      issues: performanceIssues,
+      score: performanceIssues.length === 0 ? 'good' : performanceIssues.length <= 2 ? 'fair' : 'poor'
+    };
+  }
+
+  extractMobileFromAI(aiAnalysis, crawlData) {
+    const mobileIssues = aiAnalysis.filter(r => r.type === 'mobile').map(r => r.issue);
+    return {
+      hasViewport: !!crawlData.meta.viewport,
+      isResponsive: !!crawlData.meta.viewport,
+      issues: mobileIssues,
+      score: mobileIssues.length === 0 ? 'good' : mobileIssues.length <= 1 ? 'fair' : 'poor'
+    };
+  }
+
+  extractAccessibilityFromAI(aiAnalysis, crawlData) {
+    const accessibilityIssues = aiAnalysis.filter(r => r.type === 'accessibility').map(r => r.issue);
+    const imagesWithoutAlt = crawlData.images.filter(img => !img.alt || img.alt.trim() === '').length;
+    return {
+      imagesWithoutAlt: imagesWithoutAlt,
+      issues: [...accessibilityIssues, ...(imagesWithoutAlt > 0 ? [`${imagesWithoutAlt} images missing alt text`] : [])],
+      score: accessibilityIssues.length === 0 && imagesWithoutAlt === 0 ? 'good' : accessibilityIssues.length <= 2 && imagesWithoutAlt <= 2 ? 'fair' : 'poor'
+    };
+  }
+
+  extractSecurityFromAI(aiAnalysis, crawlData) {
+    const securityIssues = aiAnalysis.filter(r => r.type === 'security').map(r => r.issue);
+    const isHTTPS = crawlData.url.startsWith('https://');
+    return {
+      isHTTPS: isHTTPS,
+      issues: [...securityIssues, ...(!isHTTPS ? ['Not using HTTPS'] : [])],
+      score: securityIssues.length === 0 && isHTTPS ? 'good' : securityIssues.length <= 1 ? 'fair' : 'poor'
+    };
+  }
+
+  extractCoreWebVitalsFromAI(aiAnalysis, crawlData) {
+    const performanceRecs = aiAnalysis.filter(r => r.type === 'performance');
+    return {
+      lcp: { status: 'unknown', value: null },
+      fid: { status: 'unknown', value: null },
+      cls: { status: 'unknown', value: null },
+      recommendations: performanceRecs.map(r => r.fix)
+    };
+  }
+
+  generateRecommendationsFromAI(aiAnalysis) {
+    return aiAnalysis.map(rec => ({
+      type: rec.type,
+      priority: rec.priority,
+      message: rec.issue,
+      fix: rec.fix,
+      impact: rec.impact
+    }));
+  }
+
+  async performAITechnicalAnalysis(crawlData) {
+    const prompt = `Perform comprehensive technical SEO analysis for this webpage:
 
 URL: ${crawlData.url}
 TITLE: ${crawlData.title}
-PERFORMANCE ISSUES: ${JSON.stringify(basicAnalysis.performance.issues)}
-MOBILE ISSUES: ${JSON.stringify(basicAnalysis.mobile.issues)}
-ACCESSIBILITY ISSUES: ${JSON.stringify(basicAnalysis.accessibility.issues)}
-SECURITY ISSUES: ${JSON.stringify(basicAnalysis.security.issues)}
+META VIEWPORT: ${crawlData.meta.viewport || 'missing'}
+META CHARSET: ${crawlData.html.charset || 'missing'}
+HTML LANG: ${crawlData.html.lang || 'missing'}
+HTTPS: ${crawlData.url.startsWith('https://') ? 'yes' : 'no'}
 IMAGE COUNT: ${crawlData.images.length}
+IMAGES WITHOUT ALT: ${crawlData.images.filter(img => !img.alt || img.alt.trim() === '').length}
 WORD COUNT: ${crawlData.content.wordCount}
+HEADINGS: H1=${crawlData.headings.h1.length}, H2=${crawlData.headings.h2.length}, H3=${crawlData.headings.h3.length}
 
-Provide advanced technical SEO recommendations including:
-1. Performance optimization strategies
-2. Mobile optimization improvements
-3. Accessibility enhancements
-4. Security best practices
-5. Core Web Vitals optimization
-6. Advanced technical fixes
+Analyze and provide comprehensive technical SEO recommendations for:
+1. Performance optimization (viewport, charset, image optimization, loading speed)
+2. Mobile optimization (responsive design, viewport settings)
+3. Accessibility (alt text, semantic HTML, ARIA labels)
+4. Security (HTTPS, security headers)
+5. Core Web Vitals optimization (LCP, FID, CLS)
+6. Technical SEO best practices
 
 Format as JSON array:
 [

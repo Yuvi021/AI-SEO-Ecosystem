@@ -77,7 +77,7 @@ export class ImageIntelligenceAgent {
       analysis.suggestions.filename = this.suggestFilename(img.src);
     }
 
-    // Generate alt text suggestion
+    // Generate alt text suggestion using OpenAI only
     if (!analysis.hasAlt || analysis.altQuality === 'poor' || analysis.altQuality === 'too-long') {
       if (openAIService.isAvailable()) {
         try {
@@ -85,11 +85,13 @@ export class ImageIntelligenceAgent {
           analysis.suggestions.alt = aiAltText;
           analysis.aiGenerated = true;
         } catch (error) {
-          console.warn(`AI alt text generation failed for image ${index}, using basic method:`, error.message);
-          analysis.suggestions.alt = this.generateAltText(img.src, analysis.filename);
+          console.warn(`AI alt text generation failed for image ${index}:`, error.message);
+          // Don't use fallback - require OpenAI
+          analysis.suggestions.alt = null;
         }
       } else {
-        analysis.suggestions.alt = this.generateAltText(img.src, analysis.filename);
+        // Require OpenAI - no fallback
+        analysis.suggestions.alt = null;
       }
     }
 
