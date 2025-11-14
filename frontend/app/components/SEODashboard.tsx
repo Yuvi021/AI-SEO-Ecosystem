@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AGENTS } from '../lib/constants';
 
@@ -22,6 +22,20 @@ const agentIcons: Record<string, string> = {
 };
 
 export default function SEODashboard({ results, url }: SEODashboardProps) {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
   // Process all results to create dashboard data
   const dashboardData = useMemo(() => {
     const data: any = {
@@ -36,6 +50,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
         medium: 0,
         low: 0,
       },
+      rawResults: results, // Store raw results for detailed views
     };
 
     // Process each URL's results
@@ -74,7 +89,8 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
             summary: formatted.summary,
             issues: formatted.issues || [],
             recommendations: formatted.recommendations || [],
-            contentExamples: formatted.contentExamples || [], // Add content examples
+            contentExamples: formatted.contentExamples || [],
+            rawData: result, // Store complete raw data
             score: calculateAgentScore(formatted),
           };
 
