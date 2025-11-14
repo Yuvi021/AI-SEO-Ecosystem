@@ -57,13 +57,14 @@ export function apiRoutes(agentManager) {
   router.get('/results', requireAuth, async (req, res) => {
     try {
       const { url, order } = req.query;
-      if (!url) {
-        return res.status(400).json({ error: 'Query param "url" is required' });
-      }
       const userId = req.user?.sub;
       const sortOrder = order === 'desc' ? -1 : 1; // default ascending v1..vn
       const items = await listResultsByUrl(userId, url, sortOrder);
-      return res.status(200).json({ url, userId, results: items });
+      const payload = { userId, results: items };
+      if (url) {
+        payload.url = url;
+      }
+      return res.status(200).json(payload);
     } catch (e) {
       return res.status(500).json({ error: e?.message || 'Failed to fetch results' });
     }

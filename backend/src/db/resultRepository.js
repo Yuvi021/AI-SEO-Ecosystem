@@ -35,9 +35,10 @@ export async function listResultsByUrl(userId, url, sortOrder = 1) {
   const db = getDb();
   const collection = db.collection(RESULTS_COLLECTION);
   // sortOrder: 1 = ascending (v1..vn), -1 = descending (vn..v1)
+  const query = url ? { userId, url } : { userId };
   const cursor = collection
-    .find({ userId, url })
-    .project({ _id: 0, version: 1, cloudinaryUrl: 1, createdAt: 1 })
+    .find(query)
+    .project({ _id: 0, url: 1, version: 1, cloudinaryUrl: 1, createdAt: 1 })
     .sort({ version: sortOrder });
   return await cursor.toArray();
 }
