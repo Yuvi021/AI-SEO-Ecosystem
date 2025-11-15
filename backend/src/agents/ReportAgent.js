@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { htmlToPdf } from '../utils/pdf.js';
 import { LighthouseScorer } from '../utils/lighthouseScorer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -601,6 +602,7 @@ export class ReportAgent {
       // Generate filename
       const filename = `report_${Date.now()}_${report.url.replace(/[^a-z0-9]/gi, '_').substring(0, 50)}.json`;
       const htmlFilename = filename.replace('.json', '.html');
+      const pdfFilename = filename.replace('.json', '.pdf');
       
       // Save JSON report
       const jsonPath = path.join(this.reportsDir, filename);
@@ -609,10 +611,19 @@ export class ReportAgent {
       // Save HTML report
       const htmlPath = path.join(this.reportsDir, htmlFilename);
       await fs.writeFile(htmlPath, report.html);
+
+      // Generate PDF from HTML
+      const pdfPath = path.join(this.reportsDir, pdfFilename);
+      try {
+        await htmlToPdf(report.html, pdfPath);
+      } catch (e) {
+        console.error('Failed to generate PDF:', e);
+      }
       
       report.files = {
         json: filename,
-        html: htmlFilename
+        html: htmlFilename,
+        pdf: pdfFilename
       };
       
       console.log(`Report saved: ${filename}`);

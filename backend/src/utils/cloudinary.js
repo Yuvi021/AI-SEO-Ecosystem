@@ -37,4 +37,19 @@ export async function uploadJsonFile(filePath, publicId, folder = process.env.CL
   return await cloudinary.uploader.upload(filePath, options);
 }
 
+export async function uploadRawFile(filePath, publicId, folder = process.env.CLOUDINARY_FOLDER || 'reports') {
+  if (!isConfigured) {
+    throw new Error('Cloudinary is not configured');
+  }
+  const options = {
+    resource_type: 'raw',
+    folder,
+    public_id: publicId,
+    overwrite: true,
+    use_filename: false,
+    unique_filename: false,
+  };
+  return await cloudinary.uploader.upload(filePath, options);
+}
+
 

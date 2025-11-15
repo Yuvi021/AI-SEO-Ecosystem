@@ -3,7 +3,7 @@ import { SitemapParser } from '../utils/sitemapParser.js';
 import { requireAuth } from '../middleware/auth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { uploadJsonFile, isCloudinaryReady } from '../utils/cloudinary.js';
+import { uploadRawFile, isCloudinaryReady } from '../utils/cloudinary.js';
 import { ensureResultIndexes, getNextVersion, createResultRecord, listResultsByUrl } from '../db/resultRepository.js';
 
 export function apiRoutes(agentManager) {
@@ -22,15 +22,15 @@ export function apiRoutes(agentManager) {
       }
 
       const results = await agentManager.processURL(url, options || {});
-      // Attempt Cloudinary upload of the JSON report and record it
+      // Attempt Cloudinary upload of the PDF report and record it
       let resultRecord = null;
       try {
-        if (results?.report?.files?.json && isCloudinaryReady()) {
-          const jsonFilename = results.report.files.json;
-          const jsonPath = path.join(reportsDir, jsonFilename);
-          const publicId = jsonFilename; // keep identical name as requested
+        if (results?.report?.files?.pdf && isCloudinaryReady()) {
+          const pdfFilename = results.report.files.pdf;
+          const pdfPath = path.join(reportsDir, pdfFilename);
+          const publicId = pdfFilename; // keep identical name
 
-          const uploadRes = await uploadJsonFile(jsonPath, publicId);
+          const uploadRes = await uploadRawFile(pdfPath, publicId);
 
           // Save to DB with versioning
           await ensureResultIndexes();
