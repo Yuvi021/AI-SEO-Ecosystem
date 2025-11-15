@@ -52,7 +52,35 @@ export function authRoutes() {
         return res.status(409).json({ error: 'Email already registered.' });
       }
       console.error('Signup error:', err?.message || err);
-      return res.status(500).json({ error: 'Internal server error.' });
+      console.error('Signup error stack:', err?.stack);
+      console.error('Signup error details:', {
+        name: err?.name,
+        code: err?.code,
+        message: err?.message,
+        mongoStatus: getMongoStatus()
+      });
+      
+      // Check if it's a MongoDB connection error
+      if (err?.message?.includes('MongoDB is not available') || err?.message?.includes('MongoDB is not initialized')) {
+        return res.status(503).json({ 
+          error: 'Database unavailable. Please configure MongoDB and ensure it is running.',
+          details: process.env.NODE_ENV !== 'production' ? { message: err?.message } : undefined
+        });
+      }
+      
+      // In development, return more details
+      const errorMessage = process.env.NODE_ENV === 'production' 
+        ? 'Internal server error.' 
+        : `Internal server error: ${err?.message || 'Unknown error'}`;
+      
+      return res.status(500).json({ 
+        error: errorMessage,
+        details: process.env.NODE_ENV !== 'production' ? {
+          message: err?.message,
+          name: err?.name,
+          code: err?.code
+        } : undefined
+      });
     }
   });
 
@@ -92,7 +120,35 @@ export function authRoutes() {
       });
     } catch (err) {
       console.error('Signin error:', err?.message || err);
-      return res.status(500).json({ error: 'Internal server error.' });
+      console.error('Signin error stack:', err?.stack);
+      console.error('Signin error details:', {
+        name: err?.name,
+        code: err?.code,
+        message: err?.message,
+        mongoStatus: getMongoStatus()
+      });
+      
+      // Check if it's a MongoDB connection error
+      if (err?.message?.includes('MongoDB is not available') || err?.message?.includes('MongoDB is not initialized')) {
+        return res.status(503).json({ 
+          error: 'Database unavailable. Please configure MongoDB and ensure it is running.',
+          details: process.env.NODE_ENV !== 'production' ? { message: err?.message } : undefined
+        });
+      }
+      
+      // In development, return more details
+      const errorMessage = process.env.NODE_ENV === 'production' 
+        ? 'Internal server error.' 
+        : `Internal server error: ${err?.message || 'Unknown error'}`;
+      
+      return res.status(500).json({ 
+        error: errorMessage,
+        details: process.env.NODE_ENV !== 'production' ? {
+          message: err?.message,
+          name: err?.name,
+          code: err?.code
+        } : undefined
+      });
     }
   });
 

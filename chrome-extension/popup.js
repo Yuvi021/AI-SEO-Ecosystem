@@ -33,6 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       console.log('authUtils available');
+      
+      // Log config status
+      if (window.EXTENSION_CONFIG) {
+        console.log('✅ Config loaded:', window.EXTENSION_CONFIG);
+        console.log('📋 IS_PRODUCTION:', window.EXTENSION_CONFIG.IS_PRODUCTION);
+        console.log('🌐 API_URL:', window.EXTENSION_CONFIG.API_URL);
+        console.log('🌐 PRODUCTION_API_URL:', window.EXTENSION_CONFIG.PRODUCTION_API_URL);
+      } else {
+        console.error('❌ Config NOT loaded!');
+      }
+      
+      // Clear any stored API URL settings to force use of config
+      await window.authUtils.clearApiUrlSettings();
+      
+      // Log what API URL will be used
+      const apiUrl = await window.authUtils.getApiUrl();
+      console.log('🌐 Final API URL that will be used:', apiUrl);
 
     // UI Elements
     const authContainer = document.getElementById('authContainer');
@@ -282,11 +299,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Check backend connection on load
-    const isConnected = await checkBackendConnection();
-    if (!isConnected) {
+    try {
+      const isConnected = await checkBackendConnection();
+      if (!isConnected) {
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '⚠️ Backend not connected. Please check your connection.';
+        analyzeBtn.disabled = true;
+      }
+    } catch (error) {
+      console.error('Backend connection check error:', error);
       statusDiv.style.display = 'block';
       statusDiv.className = 'status error';
-      statusDiv.textContent = '⚠️ Backend not connected. Please start the backend server.';
+      statusDiv.textContent = '⚠️ Unable to connect to backend. Please check your internet connection.';
       analyzeBtn.disabled = true;
     }
   }
@@ -514,9 +539,16 @@ document.addEventListener('DOMContentLoaded', () => {
   async function checkBackendConnection() {
     try {
       // Use the API URL from auth.js
-      const apiUrl = window.authUtils && (await chrome.storage.local.get(['apiUrl'])).apiUrl || 'https://ai-seo-ecosystem.onrender.com/api';
+      const apiUrl = window.authUtils ? await window.authUtils.getApiUrl() : 'https://ai-seo-ecosystem.onrender.com/api';
       const baseUrl = apiUrl.replace('/api', '');
-      const response = await fetch(`${baseUrl}/health`);
+      const response = await fetch(`${baseUrl}/health`, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
       if (response.ok) {
         return true;
       }
