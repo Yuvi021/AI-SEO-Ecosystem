@@ -444,7 +444,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
                     {previewUrl || 'No URL available'}
                   </div>
                 </div>
-                <div className="pt-8 h-[500px] overflow-hidden relative bg-gray-50 dark:bg-gray-900">
+                {/* <div className="pt-8 h-[500px] overflow-hidden relative bg-gray-50 dark:bg-gray-900">
                   {previewUrl ? (
                     <>
                       {isLoadingPreview && !previewError && (
@@ -547,7 +547,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
                       </div>
                     </div>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
