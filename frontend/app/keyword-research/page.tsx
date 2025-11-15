@@ -6,12 +6,19 @@ import Link from 'next/link';
 import { API_URL } from '../lib/constants';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import YouTubeModal from '../components/YouTubeModal';
 
 export default function KeywordResearch() {
   const [keywords, setKeywords] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  
+  // Get YouTube URL from environment variable
+  const youtubeUrl = typeof window !== 'undefined' 
+    ? (process.env.NEXT_PUBLIC_YOUTUBE_DEMO_URL || 'https://youtu.be/5OSCU9UTFzA')
+    : 'https://youtu.be/5OSCU9UTFzA';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +76,19 @@ export default function KeywordResearch() {
           <p className="text-xl text-gray-600 dark:text-gray-300">
             Discover high-value keywords with AI-powered research
           </p>
+          <div className="mt-6">
+            <motion.button
+              onClick={() => setIsVideoModalOpen(true)}
+              className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 rounded-xl font-semibold text-base hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all flex items-center gap-2 mx-auto"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Watch Demo
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Input Form */}
@@ -394,6 +414,13 @@ export default function KeywordResearch() {
       </div>
 
       <Footer />
+      
+      {/* YouTube Video Modal */}
+      <YouTubeModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoUrl={youtubeUrl}
+      />
     </div>
   );
 }

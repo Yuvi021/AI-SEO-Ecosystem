@@ -8,10 +8,17 @@ import Image from 'next/image';
 import { useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import YouTubeModal from './components/YouTubeModal';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  
+  // Get YouTube URL from environment variable
+  const youtubeUrl = typeof window !== 'undefined' 
+    ? (process.env.NEXT_PUBLIC_YOUTUBE_DEMO_URL || 'https://youtu.be/5OSCU9UTFzA')
+    : 'https://youtu.be/5OSCU9UTFzA';
 
   const features = [
     {
@@ -299,6 +306,7 @@ export default function Home() {
                 </Link>
               </motion.div>
               <motion.button 
+                onClick={() => setIsVideoModalOpen(true)}
                 className="px-8 py-4 bg-white dark:bg-gray-800 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 rounded-xl font-semibold text-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -758,6 +766,13 @@ export default function Home() {
 
       {/* Footer */}
       <Footer />
+      
+      {/* YouTube Video Modal */}
+      <YouTubeModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoUrl={youtubeUrl}
+      />
     </div>
   );
 }
