@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+// No auto-scroll imports needed - user controls all scrolling manually
 
 interface LogEntry {
   type: string;
@@ -19,11 +19,7 @@ export default function ProgressSection({
   progressMessage,
   logEntries,
 }: ProgressSectionProps) {
-  const logEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logEntries]);
+  // No auto-scroll - user controls all scrolling manually
 
   const getLogEntryColor = (type: string) => {
     switch (type) {
@@ -106,7 +102,6 @@ export default function ProgressSection({
                 </div>
               ))
             )}
-            <div ref={logEndRef} />
           </div>
         </div>
       </div>
