@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './nprogress.css';
 import AuthProviderWrapper from './components/AuthProviderWrapper';
+import TopLoader from './components/TopLoader';
 
 export const metadata: Metadata = {
   title: 'AI SEO Ecosystem - Multi-Agent Analysis',
@@ -21,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <TopLoader />
         <AuthProviderWrapper>{children}</AuthProviderWrapper>
       </body>
     </html>
