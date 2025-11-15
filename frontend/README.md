@@ -24,7 +24,7 @@ npm run build
 npm start
 ```
 
-The frontend will run on `http://localhost:3000` (or automatically use 3001 if 3000 is taken)
+The frontend will run on `http://localhost:3000` (or automatically use the next available port)
 
 ## 📁 Structure
 
@@ -63,12 +63,12 @@ frontend/
 The frontend connects to the backend API. Configure in `app/lib/constants.ts`:
 
 ```typescript
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 ```
 
 Or set environment variable:
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3000/api npm run dev
+NEXT_PUBLIC_API_URL=http://localhost:3001/api npm run dev
 ```
 
 ### Port
@@ -80,7 +80,7 @@ PORT=3001 npm run dev
 
 ## 🎯 Usage
 
-1. Make sure the backend is running on `http://localhost:3000`
+1. Make sure the backend is running on `http://localhost:3001`
 2. Start the frontend: `npm run dev`
 3. Open `http://localhost:3000` (or the port shown in terminal)
 4. Enter a URL or sitemap URL
@@ -116,4 +116,23 @@ npm start
 - TypeScript for type safety
 - Tailwind CSS for styling
 - Server-Sent Events for real-time updates
+
+## 🗺️ Architecture
+
+```mermaid
+flowchart LR
+  UI[Next.js App] -->|SSE / REST| API[(Backend /api on :3001)]
+```
+
+## 🔧 Environment Example
+
+Create `.env.local` in `frontend/` (or set env inline):
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+## 🌐 Hosting
+- Local development: `next dev` on `http://localhost:3000`
+- Recommended production hosting: Vercel (configure `NEXT_PUBLIC_API_URL` to your backend URL)
 
