@@ -709,10 +709,7 @@ function AnalyzePageContent() {
             {viewMode === 'dashboard' ? (
               <SEODashboard results={results} url={url} />
             ) : viewMode === 'combined' ? (
-              <div className="space-y-6">
-                <DetailedDataSections results={results} />
-                <SEODashboard results={results} url={url} />
-              </div>
+              <DetailedDataSections results={results} />
             ) : (
               <ResultsSection results={results} />
             )}
