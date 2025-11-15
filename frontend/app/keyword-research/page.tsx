@@ -50,7 +50,7 @@ export default function KeywordResearch() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Navigation */}
       <Header />
 
@@ -128,19 +128,19 @@ export default function KeywordResearch() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
               <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Research Summary</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
+                <div className="p-4 bg-cyan-50 dark:bg-gray-800 rounded-xl border border-cyan-200 dark:border-gray-700">
                   <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{results.summary.totalKeywords}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Total Keywords</div>
                 </div>
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <div className="p-4 bg-blue-50 dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-gray-700">
                   <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{results.summary.opportunities}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Opportunities</div>
                 </div>
-                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                <div className="p-4 bg-purple-50 dark:bg-gray-800 rounded-xl border border-purple-200 dark:border-gray-700">
                   <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{results.summary.avgDifficulty}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Avg Difficulty</div>
                 </div>
-                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                <div className="p-4 bg-indigo-50 dark:bg-gray-800 rounded-xl border border-indigo-200 dark:border-gray-700">
                   <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{results.summary.avgVolume.toLocaleString()}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Avg Volume</div>
                 </div>
@@ -204,7 +204,7 @@ export default function KeywordResearch() {
                 <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">💡 Recommendations</h2>
                 <div className="space-y-4">
                   {results.recommendations.map((rec: any, idx: number) => (
-                    <div key={idx} className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl border border-cyan-200 dark:border-cyan-800">
+                    <div key={idx} className="p-4 bg-cyan-50 dark:bg-gray-800 rounded-xl border border-cyan-200 dark:border-gray-700">
                       <div className="flex items-start gap-3">
                         <span className="text-2xl">
                           {rec.type === 'quick_wins' ? '🎯' : rec.type === 'questions' ? '❓' : rec.type === 'content_cluster' ? '📚' : '📈'}
@@ -241,7 +241,7 @@ export default function KeywordResearch() {
                 <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">📚 Keyword Clusters</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {results.clusters.map((cluster: any, idx: number) => (
-                    <div key={idx} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                    <div key={idx} className="p-5 bg-purple-50 dark:bg-gray-800 rounded-xl border border-purple-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
                           {cluster.topic}
@@ -288,7 +288,7 @@ export default function KeywordResearch() {
                 </p>
                 <div className="space-y-3">
                   {results.questions.map((q: any, idx: number) => (
-                    <div key={idx} className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <div key={idx} className="p-4 bg-green-50 dark:bg-gray-800 rounded-xl border border-green-200 dark:border-gray-700">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{q.keyword}</h3>
@@ -320,7 +320,7 @@ export default function KeywordResearch() {
                 <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">📈 Trending Topics</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {results.trending.rising && results.trending.rising.length > 0 && (
-                    <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <div className="p-5 bg-green-50 dark:bg-gray-800 rounded-xl border border-green-200 dark:border-gray-700">
                       <h3 className="font-bold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
                         <span>📈</span> Rising
                       </h3>
@@ -336,7 +336,7 @@ export default function KeywordResearch() {
                   )}
                   
                   {results.trending.emerging && results.trending.emerging.length > 0 && (
-                    <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <div className="p-5 bg-blue-50 dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-gray-700">
                       <h3 className="font-bold text-blue-700 dark:text-blue-400 mb-3 flex items-center gap-2">
                         <span>🚀</span> Emerging
                       </h3>
@@ -352,7 +352,7 @@ export default function KeywordResearch() {
                   )}
                   
                   {results.trending.declining && results.trending.declining.length > 0 && (
-                    <div className="p-5 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200 dark:border-orange-800">
+                    <div className="p-5 bg-orange-50 dark:bg-gray-800 rounded-xl border border-orange-200 dark:border-gray-700">
                       <h3 className="font-bold text-orange-700 dark:text-orange-400 mb-3 flex items-center gap-2">
                         <span>📉</span> Declining
                       </h3>
@@ -381,7 +381,7 @@ export default function KeywordResearch() {
                   {results.relatedTopics.map((topic: string, idx: number) => (
                     <span
                       key={idx}
-                      className="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:shadow-md transition-shadow"
+                      className="px-4 py-2 bg-indigo-50 dark:bg-gray-800 border border-indigo-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:shadow-md transition-shadow"
                     >
                       {topic}
                     </span>

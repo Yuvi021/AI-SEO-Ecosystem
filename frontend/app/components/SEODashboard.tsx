@@ -27,15 +27,15 @@ function LighthouseScoreCard({ title, score, icon, description, color, progress 
     score >= 50 ? 'stroke-orange-500' :
       'stroke-red-500';
 
-  const bgColor = color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/20' :
-    color === 'green' ? 'bg-green-50 dark:bg-green-900/20' :
-      color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/20' :
-        'bg-orange-50 dark:bg-orange-900/20';
+  const bgColor = color === 'blue' ? 'bg-blue-50 dark:bg-gray-800' :
+    color === 'green' ? 'bg-green-50 dark:bg-gray-800' :
+      color === 'purple' ? 'bg-purple-50 dark:bg-gray-800' :
+        'bg-orange-50 dark:bg-gray-800';
 
-  const borderColor = color === 'blue' ? 'border-blue-200 dark:border-blue-800' :
-    color === 'green' ? 'border-green-200 dark:border-green-800' :
-      color === 'purple' ? 'border-purple-200 dark:border-purple-800' :
-        'border-orange-200 dark:border-orange-800';
+  const borderColor = color === 'blue' ? 'border-blue-200 dark:border-gray-700' :
+    color === 'green' ? 'border-green-200 dark:border-gray-700' :
+      color === 'purple' ? 'border-purple-200 dark:border-gray-700' :
+        'border-orange-200 dark:border-gray-700';
 
   // Calculate stroke-dasharray for circular progress
   const circumference = 2 * Math.PI * 45; // radius = 45
@@ -45,7 +45,7 @@ function LighthouseScoreCard({ title, score, icon, description, color, progress 
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`${bgColor} ${borderColor} rounded-xl p-6 border-2 text-center`}
+      className={`${bgColor} ${borderColor} rounded-xl p-6 border text-center`}
     >
       <div className="flex flex-col items-center">
         <div className="relative w-32 h-32 mb-4">
@@ -308,34 +308,34 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-100 dark:bg-green-900/30';
-    if (score >= 60) return 'bg-yellow-100 dark:bg-yellow-900/30';
-    return 'bg-red-100 dark:bg-red-900/30';
+    if (score >= 80) return 'bg-green-100 dark:bg-gray-700';
+    if (score >= 60) return 'bg-yellow-100 dark:bg-gray-700';
+    return 'bg-red-100 dark:bg-gray-700';
   };
 
   const getStatusBadge = (status: string) => {
     if (status === 'good') {
       return (
-        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-gray-700 text-green-700 dark:text-green-400">
           ✓ Excellent
         </span>
       );
     }
     return (
-      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
+      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 dark:bg-gray-700 text-yellow-700 dark:text-yellow-400">
         ⚠ Needs Improvement
       </span>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20 p-6">
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 p-8"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8"
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
@@ -374,7 +374,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 p-8"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8"
         >
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <span className="text-3xl">📊</span>
@@ -447,14 +447,14 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Agents Analyzed</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData.agents.length}</p>
               </div>
-              <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-cyan-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">🤖</span>
               </div>
             </div>
@@ -464,14 +464,14 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Issues</p>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400">{dashboardData.totalIssues}</p>
               </div>
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-red-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">⚠️</span>
               </div>
             </div>
@@ -481,14 +481,14 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Recommendations</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">{dashboardData.totalRecommendations}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">💡</span>
               </div>
             </div>
@@ -498,7 +498,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -507,7 +507,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
                   {dashboardData.priorityBreakdown.critical + dashboardData.priorityBreakdown.high}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">🔥</span>
               </div>
             </div>
@@ -522,12 +522,12 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index }}
-              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all"
             >
               {/* Card Header */}
               <div className={`p-6 ${agent.status === 'good'
-                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
-                  : 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20'
+                  ? 'bg-green-50 dark:bg-green-900/10'
+                  : 'bg-yellow-50 dark:bg-yellow-900/10'
                 }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -549,7 +549,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
               </div>
 
               {/* Score Progress Bar */}
-              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900/50">
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900/30">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Performance Score</span>
                   <span className={`text-xs font-bold ${progress >= 100 ? getScoreColor(agent.score) : 'text-gray-400 dark:text-gray-500'}`}>
@@ -634,23 +634,23 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 rounded-xl shadow-xl p-8 text-white"
+          className="bg-blue-600 dark:bg-blue-800 rounded-xl shadow-lg border border-blue-700 dark:border-blue-900 p-8 text-white"
         >
           <h2 className="text-2xl font-bold mb-4">📈 Next Steps</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/10 dark:bg-white/5 rounded-lg p-4 border border-white/20">
               <h3 className="font-semibold mb-2">1. Fix Critical Issues</h3>
               <p className="text-sm text-white/90">
                 Address {dashboardData.priorityBreakdown.critical + dashboardData.priorityBreakdown.high} high-priority issues first
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/10 dark:bg-white/5 rounded-lg p-4 border border-white/20">
               <h3 className="font-semibold mb-2">2. Implement Recommendations</h3>
               <p className="text-sm text-white/90">
                 Follow the {dashboardData.totalRecommendations || dashboardData.allRecommendations.length} recommendations to improve your SEO score
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/10 dark:bg-white/5 rounded-lg p-4 border border-white/20">
               <h3 className="font-semibold mb-2">3. Monitor Progress</h3>
               <p className="text-sm text-white/90">
                 Re-run analysis after making changes to track improvements

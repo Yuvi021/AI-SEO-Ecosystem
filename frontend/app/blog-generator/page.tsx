@@ -128,7 +128,7 @@ export default function BlogGenerator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Navigation */}
       <Header />
 
@@ -466,7 +466,7 @@ export default function BlogGenerator() {
                 {activeTab === 'seo' && (
                   <div className="space-y-6">
                     {/* Quality Score */}
-                    <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 p-6 rounded-xl">
+                    <div className="bg-cyan-50 dark:bg-gray-800 p-6 rounded-xl border border-cyan-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white">Content Quality Score</h3>
                         <div className="text-4xl font-bold text-cyan-600 dark:text-cyan-400">
@@ -557,7 +557,7 @@ export default function BlogGenerator() {
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">SEO Recommendations</h3>
                         <div className="space-y-3">
                           {results.seoAnalysis.recommendations.map((rec: any, idx: number) => (
-                            <div key={idx} className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg">
+                            <div key={idx} className="p-4 bg-cyan-50 dark:bg-gray-800 rounded-lg border border-cyan-200 dark:border-gray-700">
                               <div className="flex items-start gap-3">
                                 <span className="text-2xl">💡</span>
                                 <div className="flex-1">

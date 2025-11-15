@@ -208,62 +208,7 @@ function AnalyzePageContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20 transition-colors duration-300 relative overflow-hidden">
-      {/* Enhanced Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div 
-          className="absolute w-96 h-96 bg-cyan-400/10 dark:bg-cyan-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
-          animate={{ 
-            x: [0, 50, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ 
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          style={{
-            left: `${mousePosition.x / 20}px`,
-            top: `${mousePosition.y / 20}px`,
-          }}
-        ></motion.div>
-        <motion.div 
-          className="absolute w-96 h-96 bg-blue-500/10 dark:bg-blue-600/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
-          animate={{ 
-            x: [0, -50, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ 
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-          style={{
-            right: `${mousePosition.x / 25}px`,
-            bottom: `${mousePosition.y / 25}px`,
-          }}
-        ></motion.div>
-        <motion.div 
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 dark:bg-purple-600/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
-          animate={{ 
-            x: [0, 30, 0],
-            y: [0, 30, 0],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{ 
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 4
-          }}
-        ></motion.div>
-      </div>
-
-      {/* AI Grid Pattern Overlay */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#3b82f612_1px,transparent_1px),linear-gradient(to_bottom,#3b82f612_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#60a5fa08_1px,transparent_1px),linear-gradient(to_bottom,#60a5fa08_1px,transparent_1px)] pointer-events-none z-0"></div>
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 relative overflow-hidden">
 
       {/* Header */}
       <Header />
@@ -290,7 +235,7 @@ function AnalyzePageContent() {
           <div className="lg:col-span-2 space-y-6">
             {/* URL Input Card */}
             <motion.div 
-              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -372,7 +317,7 @@ function AnalyzePageContent() {
 
             {/* Agent Selection Card */}
             <motion.div 
-              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -392,7 +337,7 @@ function AnalyzePageContent() {
           <div className="space-y-6">
             {/* Stats Card */}
             <motion.div 
-              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -432,7 +377,7 @@ function AnalyzePageContent() {
 
             {/* Info Card */}
             <motion.div 
-              className="bg-gradient-to-br from-cyan-50/80 to-blue-50/60 dark:from-cyan-900/20 dark:to-blue-800/10 rounded-2xl border border-cyan-200 dark:border-cyan-900/50 p-6"
+              className="bg-cyan-50 dark:bg-gray-800 rounded-2xl border border-cyan-200 dark:border-gray-700 p-6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -665,7 +610,7 @@ function AnalyzePageContent() {
         {/* Empty State */}
         {!isAnalyzing && logEntries.length === 0 && Object.keys(results).length === 0 && (
           <motion.div 
-            className="mt-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12 text-center"
+            className="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12 text-center"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
