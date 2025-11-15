@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 import './nprogress.css';
 import AuthProviderWrapper from './components/AuthProviderWrapper';
@@ -96,7 +97,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <TopLoader />
+        <Suspense fallback={null}>
+          <TopLoader />
+        </Suspense>
         <AuthProviderWrapper>{children}</AuthProviderWrapper>
       </body>
     </html>
