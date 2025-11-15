@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { API_URL } from '../lib/constants';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function KeywordResearch() {
   const [keywords, setKeywords] = useState<string>('');
@@ -25,10 +27,11 @@ export default function KeywordResearch() {
 
     try {
       const keywordArray = keywords.split(',').map(k => k.trim()).filter(Boolean);
-      
+      const getToken = localStorage.getItem("authToken")
+
       const response = await fetch(`${API_URL}/keyword-research`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken}` },
         body: JSON.stringify({ keywords: keywordArray }),
       });
 
@@ -49,26 +52,7 @@ export default function KeywordResearch() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20">
       {/* Navigation */}
-      <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-blue-100/50 dark:border-blue-900/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-xl">
-                🤖
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI SEO Ecosystem
-              </span>
-            </Link>
-            <Link
-              href="/analyze"
-              className="px-4 py-2 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
-            >
-              Back to Analysis
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
@@ -173,7 +157,7 @@ export default function KeywordResearch() {
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Keyword</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Volume</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Difficulty</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Intent</th>
+                      {/* <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Intent</th> */}
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Intent</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Opportunity</th>
                     </tr>
@@ -192,7 +176,7 @@ export default function KeywordResearch() {
                             {Math.round(kw.difficulty)}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${kw.cpc}</td>
+                        {/* <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${kw.cpc}</td> */}
                         <td className="py-3 px-4">
                           <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs font-medium">
                             {kw.intent}
@@ -217,15 +201,26 @@ export default function KeywordResearch() {
             {/* Recommendations */}
             {results.recommendations && results.recommendations.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Recommendations</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">💡 Recommendations</h2>
                 <div className="space-y-4">
                   {results.recommendations.map((rec: any, idx: number) => (
                     <div key={idx} className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl border border-cyan-200 dark:border-cyan-800">
                       <div className="flex items-start gap-3">
-                        <span className="text-2xl">💡</span>
+                        <span className="text-2xl">
+                          {rec.type === 'quick_wins' ? '🎯' : rec.type === 'questions' ? '❓' : rec.type === 'content_cluster' ? '📚' : '📈'}
+                        </span>
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{rec.message}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{rec.action}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{rec.action}</p>
+                          {rec.keywords && rec.keywords.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {rec.keywords.slice(0, 5).map((kw: string, i: number) => (
+                                <span key={i} className="px-2 py-1 bg-white dark:bg-gray-700 rounded text-xs text-gray-700 dark:text-gray-300">
+                                  {kw}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           rec.priority === 'high' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
@@ -239,9 +234,166 @@ export default function KeywordResearch() {
                 </div>
               </div>
             )}
+
+            {/* Keyword Clusters */}
+            {results.clusters && results.clusters.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">📚 Keyword Clusters</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {results.clusters.map((cluster: any, idx: number) => (
+                    <div key={idx} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
+                          {cluster.topic}
+                        </h3>
+                        <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+                          {cluster.keywords.length} keywords
+                        </span>
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Total Volume:</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{cluster.totalVolume.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Avg Difficulty:</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{cluster.avgDifficulty}</span>
+                        </div>
+                      </div>
+                      <details className="mt-3">
+                        <summary className="cursor-pointer text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
+                          View keywords ({cluster.keywords.length})
+                        </summary>
+                        <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                          {cluster.keywords.map((kw: any, i: number) => (
+                            <div key={i} className="text-xs text-gray-600 dark:text-gray-400 flex justify-between py-1">
+                              <span>{kw.keyword}</span>
+                              <span className="text-gray-500 dark:text-gray-500">{kw.volume.toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Question Keywords */}
+            {results.questions && results.questions.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">❓ Question Keywords</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Perfect for FAQ sections and featured snippets
+                </p>
+                <div className="space-y-3">
+                  {results.questions.map((q: any, idx: number) => (
+                    <div key={idx} className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{q.keyword}</h3>
+                          <div className="flex flex-wrap gap-3 text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">
+                              Volume: <span className="font-medium text-gray-900 dark:text-white">{q.volume.toLocaleString()}</span>
+                            </span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                              Difficulty: <span className="font-medium text-gray-900 dark:text-white">{q.difficulty}</span>
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              q.opportunity === 'high' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                              'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                            }`}>
+                              {q.opportunity} opportunity
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Trending Topics */}
+            {results.trending && (results.trending.rising?.length > 0 || results.trending.emerging?.length > 0 || results.trending.declining?.length > 0) && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">📈 Trending Topics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {results.trending.rising && results.trending.rising.length > 0 && (
+                    <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                      <h3 className="font-bold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
+                        <span>📈</span> Rising
+                      </h3>
+                      <ul className="space-y-2">
+                        {results.trending.rising.map((topic: string, idx: number) => (
+                          <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                            {topic}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {results.trending.emerging && results.trending.emerging.length > 0 && (
+                    <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                      <h3 className="font-bold text-blue-700 dark:text-blue-400 mb-3 flex items-center gap-2">
+                        <span>🚀</span> Emerging
+                      </h3>
+                      <ul className="space-y-2">
+                        {results.trending.emerging.map((topic: string, idx: number) => (
+                          <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                            {topic}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {results.trending.declining && results.trending.declining.length > 0 && (
+                    <div className="p-5 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200 dark:border-orange-800">
+                      <h3 className="font-bold text-orange-700 dark:text-orange-400 mb-3 flex items-center gap-2">
+                        <span>📉</span> Declining
+                      </h3>
+                      <ul className="space-y-2">
+                        {results.trending.declining.map((topic: string, idx: number) => (
+                          <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                            {topic}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Related Topics */}
+            {results.relatedTopics && results.relatedTopics.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">🔗 Related Topics</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Expand your content strategy with these related topics
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {results.relatedTopics.map((topic: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:shadow-md transition-shadow"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }
