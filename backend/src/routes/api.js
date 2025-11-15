@@ -3,6 +3,7 @@ import { SitemapParser } from '../utils/sitemapParser.js';
 import { requireAuth } from '../middleware/auth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs/promises';
 import { uploadRawFile, isCloudinaryReady } from '../utils/cloudinary.js';
 import { ensureResultIndexes, getNextVersion, createResultRecord, listResultsByUrl } from '../db/resultRepository.js';
 
@@ -370,6 +371,35 @@ export function apiRoutes(agentManager) {
       res.json({ success: true, data: result });
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Download PDF report endpoint
+  router.get('/download-report/:filename', requireAuth, async (req, res) => {
+    try {
+      const { filename } = req.params;
+      
+      // Sanitize filename to prevent directory traversal
+      const sanitizedFilename = path.basename(filename);
+      const pdfPath = path.join(reportsDir, sanitizedFilename);
+      
+      // Check if file exists
+      try {
+        await fs.access(pdfPath);
+      } catch (error) {
+        return res.status(404).json({ error: 'PDF report not found' });
+      }
+      
+      // Set headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
+      
+      // Stream the file
+      const fileStream = await fs.readFile(pdfPath);
+      res.send(fileStream);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      res.status(500).json({ error: 'Failed to download PDF report' });
     }
   });
 

@@ -584,56 +584,119 @@ function AnalyzePageContent() {
           </motion.div>
         )}
 
-        {/* View Mode Toggle */}
-        {Object.keys(results).length > 0 && (
-          <motion.div 
-            className="mt-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">View Report</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Choose how you want to view your SEO analysis results</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setViewMode('dashboard')}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                      viewMode === 'dashboard'
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    📊 Dashboard
-                  </button>
-                  <button
-                    onClick={() => setViewMode('combined')}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                      viewMode === 'combined'
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    🔍 Complete Data
-                  </button>
-                  <button
-                    onClick={() => setViewMode('detailed')}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                      viewMode === 'detailed'
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    📋 Raw Data
-                  </button>
+        {/* View Mode Toggle & Download Button */}
+        {Object.keys(results).length > 0 && (() => {
+          // Find report data with PDF file - results are organized by URL, then by agent
+          let pdfFilename: string | null = null;
+          for (const urlKey of Object.keys(results)) {
+            const urlResults = results[urlKey] as any;
+            // Check if report agent has PDF file
+            if (urlResults?.report?.files?.pdf) {
+              pdfFilename = urlResults.report.files.pdf;
+              break;
+            }
+            // Also check the result object directly
+            if (urlResults?.report?.result?.files?.pdf) {
+              pdfFilename = urlResults.report.result.files.pdf;
+              break;
+            }
+          }
+
+          const handleDownloadPDF = async () => {
+            if (!pdfFilename) {
+              alert('PDF report not available yet. Please wait for the report to be generated.');
+              return;
+            }
+
+            try {
+              const token = localStorage.getItem('authToken');
+              const response = await fetch(`${API_URL}/download-report/${encodeURIComponent(pdfFilename)}`, {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+
+              if (!response.ok) {
+                throw new Error('Failed to download PDF');
+              }
+
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = pdfFilename;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+            } catch (error) {
+              console.error('Error downloading PDF:', error);
+              alert('Failed to download PDF report. Please try again.');
+            }
+          };
+
+          return (
+            <motion.div 
+              className="mt-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">View Report</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Choose how you want to view your SEO analysis results</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {pdfFilename && (
+                      <button
+                        onClick={handleDownloadPDF}
+                        className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 dark:hover:from-green-600 dark:hover:to-emerald-600 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download PDF Report
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setViewMode('dashboard')}
+                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                        viewMode === 'dashboard'
+                          ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      📊 Dashboard
+                    </button>
+                    <button
+                      onClick={() => setViewMode('combined')}
+                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                        viewMode === 'combined'
+                          ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      🔍 Complete Data
+                    </button>
+                    <button
+                      onClick={() => setViewMode('detailed')}
+                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                        viewMode === 'detailed'
+                          ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      📋 Raw Data
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          );
+        })()}
 
         {/* Results Section */}
         {Object.keys(results).length > 0 && (

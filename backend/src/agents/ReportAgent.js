@@ -200,8 +200,10 @@ export class ReportAgent {
     return {
       overall: validation.overall,
       quality: validation.quality,
-      uniqueness: validation.uniqueness?.passed,
-      seoCompliance: validation.seoCompliance?.passed
+      qualityScore: validation.quality?.score || 0,
+      grade: validation.quality?.grade || 'N/A',
+      uniqueness: validation.uniqueness?.passed ? '✅ Unique' : '❌ May not be unique',
+      seoCompliance: validation.seoCompliance?.passed ? '✅ Compliant' : '❌ Issues found'
     };
   }
 
@@ -380,6 +382,8 @@ export class ReportAgent {
                 </div>
             </div>
 
+            ${this.generateLighthouseScoresHTML(report.lighthouse)}
+
             ${this.generateRecommendationsHTML(report.recommendations)}
             
             ${this.generateSectionsHTML(report.sections)}
@@ -393,36 +397,76 @@ export class ReportAgent {
 
   generateRecommendationsHTML(recommendations) {
     if (!recommendations || recommendations.length === 0) {
-      return '<div class="section"><h2>Recommendations</h2><p>No recommendations at this time.</p></div>';
+      return '<div class="section"><h2>📋 Recommendations & Action Items</h2><p style="padding: 20px; background: #d1fae5; border-radius: 8px; color: #065f46;">✅ No critical issues found. Your website is well optimized!</p></div>';
     }
 
     let html = '<div class="section"><h2>📋 Recommendations & Action Items</h2>';
-    html += '<p style="margin-bottom: 20px; color: #666;">Review the issues below and follow the recommended actions to improve your SEO.</p>';
+    html += '<p style="margin-bottom: 25px; color: #666; font-size: 14px;">Prioritized list of issues and actionable recommendations to improve your SEO performance. Address critical and high-priority items first.</p>';
     
-    recommendations.forEach(rec => {
-      const priorityLabels = {
-        critical: '🔴 Critical',
-        high: '🟠 High Priority',
-        medium: '🟡 Medium Priority',
-        low: '🟢 Low Priority',
-        info: 'ℹ️ Information'
-      };
+    // Group by priority
+    const grouped = {
+      critical: recommendations.filter(r => r.priority === 'critical'),
+      high: recommendations.filter(r => r.priority === 'high'),
+      medium: recommendations.filter(r => r.priority === 'medium'),
+      low: recommendations.filter(r => r.priority === 'low'),
+      info: recommendations.filter(r => r.priority === 'info' || !r.priority)
+    };
+    
+    const priorityOrder = ['critical', 'high', 'medium', 'low', 'info'];
+    const priorityLabels = {
+      critical: '🔴 Critical Priority',
+      high: '🟠 High Priority',
+      medium: '🟡 Medium Priority',
+      low: '🟢 Low Priority',
+      info: 'ℹ️ Information'
+    };
+    
+    priorityOrder.forEach(priority => {
+      if (grouped[priority].length === 0) return;
       
-      html += `
-        <div class="recommendation ${rec.priority}">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-              <span class="priority ${rec.priority}">${priorityLabels[rec.priority] || rec.priority}</span>
+      html += `<div style="margin-bottom: 30px;">`;
+      html += `<h3 style="margin-bottom: 15px; color: #333; font-size: 18px; padding-bottom: 8px; border-bottom: 2px solid ${priority === 'critical' ? '#ef4444' : priority === 'high' ? '#f59e0b' : priority === 'medium' ? '#fbbf24' : priority === 'low' ? '#10b981' : '#6b7280'};">
+        ${priorityLabels[priority]} (${grouped[priority].length} ${grouped[priority].length === 1 ? 'item' : 'items'})
+      </h3>`;
+      
+      grouped[priority].forEach((rec, idx) => {
+        html += `
+          <div class="recommendation ${rec.priority}" style="margin-bottom: 20px; background: white; border-radius: 8px; overflow: hidden; border: 1px solid ${priority === 'critical' ? '#fee2e2' : priority === 'high' ? '#fef3c7' : priority === 'medium' ? '#fef9c3' : priority === 'low' ? '#d1fae5' : '#f3f4f6'};">
+            <div style="background: ${priority === 'critical' ? '#fee2e2' : priority === 'high' ? '#fef3c7' : priority === 'medium' ? '#fef9c3' : priority === 'low' ? '#d1fae5' : '#f3f4f6'}; padding: 15px; border-bottom: 1px solid #e5e7eb;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="priority ${rec.priority}" style="font-size: 12px; font-weight: 600;">${priorityLabels[priority] || rec.priority}</span>
+                <span style="color: #666; font-size: 12px;">#${idx + 1}</span>
+              </div>
             </div>
-            <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 10px;">
-              <h4 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">Issue:</h4>
-              <p style="margin: 0; color: #555;">${rec.message}</p>
+            <div style="padding: 20px;">
+              <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #333; font-size: 16px; font-weight: 600;">🔍 Issue Identified:</h4>
+                <p style="margin: 0; color: #555; line-height: 1.6; font-size: 14px;">${rec.message}</p>
+              </div>
+              <div style="background: #eff6ff; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb; margin-bottom: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 14px; font-weight: 600;">💡 Recommended Solution:</h4>
+                <p style="margin: 0 0 10px 0; color: #1e3a8a; line-height: 1.6; font-size: 13px;"><strong>Impact:</strong> ${rec.impact || 'Improves SEO performance and user experience'}</p>
+                ${rec.steps ? `
+                  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #bfdbfe;">
+                    <strong style="display: block; margin-bottom: 8px; color: #1e40af; font-size: 12px; text-transform: uppercase;">Step-by-Step Instructions:</strong>
+                    <ol style="margin: 0; padding-left: 20px; color: #1e3a8a; font-size: 13px; line-height: 1.8;">
+                      ${rec.steps.map((step, stepIdx) => `<li style="margin-bottom: 6px;">${step}</li>`).join('')}
+                    </ol>
+                  </div>
+                ` : ''}
+              </div>
+              ${rec.expectedImprovement ? `
+                <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                  <strong style="color: #065f46; font-size: 12px;">📈 Expected Improvement:</strong>
+                  <p style="margin: 5px 0 0 0; color: #166534; font-size: 13px;">${rec.expectedImprovement}</p>
+                </div>
+              ` : ''}
             </div>
-            <div style="background: #f0f9ff; padding: 15px; border-radius: 6px; border-left: 3px solid #0ea5e9;">
-              <h4 style="margin: 0 0 8px 0; color: #0369a1; font-size: 14px;">💡 How to Fix:</h4>
-              <p style="margin: 0; color: #0c4a6e;"><strong>Impact:</strong> ${rec.impact}</p>
-            </div>
-        </div>
-      `;
+          </div>
+        `;
+      });
+      
+      html += `</div>`;
     });
     
     html += '</div>';
@@ -435,19 +479,86 @@ export class ReportAgent {
     
     // Crawl Analysis
     if (sections.crawl) {
+      const wordCountStatus = sections.crawl.wordCount >= 300 ? '✅' : '⚠️';
+      const h1Status = sections.crawl.headings?.h1 === 1 ? '✅' : sections.crawl.headings?.h1 === 0 ? '❌' : '⚠️';
+      
       html += `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">🕷️ Page Crawl Analysis</h3>
-          <p style="color: #666; margin-bottom: 15px;">Analyzed the structure and content of your webpage.</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div><strong>Title:</strong> ${sections.crawl.title || 'Not found'}</div>
-            <div><strong>Word Count:</strong> ${sections.crawl.wordCount || 0}</div>
-            <div><strong>H1 Headings:</strong> ${sections.crawl.headings?.h1 || 0}</div>
-            <div><strong>H2 Headings:</strong> ${sections.crawl.headings?.h2 || 0}</div>
-            <div><strong>H3 Headings:</strong> ${sections.crawl.headings?.h3 || 0}</div>
-            <div><strong>Internal Links:</strong> ${sections.crawl.links?.internal || 0}</div>
-            <div><strong>External Links:</strong> ${sections.crawl.links?.external || 0}</div>
-            <div><strong>Images:</strong> ${sections.crawl.images || 0}</div>
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">🕷️ Page Crawl Analysis</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Comprehensive analysis of your webpage structure, content, and SEO elements.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📄 Page Information</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: 600; width: 40%;">Page Title:</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${sections.crawl.title || '<span style="color: #ef4444;">Not found</span>'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: 600;">Word Count:</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+                  ${sections.crawl.wordCount || 0} words 
+                  ${wordCountStatus} 
+                  <span style="font-size: 12px; color: #666;">(${sections.crawl.wordCount >= 300 ? 'Good' : 'Aim for at least 300 words'})</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📑 Heading Structure</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+              <div style="text-align: center; padding: 15px; background: ${sections.crawl.headings?.h1 === 1 ? '#d1fae5' : '#fee2e2'}; border-radius: 6px;">
+                <div style="font-size: 24px; font-weight: bold; color: #333;">${sections.crawl.headings?.h1 || 0}</div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">H1 Headings ${h1Status}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 3px;">${sections.crawl.headings?.h1 === 1 ? 'Perfect' : sections.crawl.headings?.h1 === 0 ? 'Missing' : 'Multiple found'}</div>
+              </div>
+              <div style="text-align: center; padding: 15px; background: #f3f4f6; border-radius: 6px;">
+                <div style="font-size: 24px; font-weight: bold; color: #333;">${sections.crawl.headings?.h2 || 0}</div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">H2 Headings</div>
+              </div>
+              <div style="text-align: center; padding: 15px; background: #f3f4f6; border-radius: 6px;">
+                <div style="font-size: 24px; font-weight: bold; color: #333;">${sections.crawl.headings?.h3 || 0}</div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">H3 Headings</div>
+              </div>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>💡 Best Practice:</strong> Use one H1 per page, multiple H2s for main sections, and H3s for subsections. This creates a clear content hierarchy that search engines understand.
+            </div>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">🔗 Links Analysis</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+              <div style="padding: 15px; background: #e0f2fe; border-radius: 6px; text-align: center;">
+                <div style="font-size: 28px; font-weight: bold; color: #0369a1;">${sections.crawl.links?.internal || 0}</div>
+                <div style="font-size: 13px; color: #0c4a6e; margin-top: 5px;">Internal Links</div>
+                <div style="font-size: 11px; color: #075985; margin-top: 3px;">Links to other pages on your site</div>
+              </div>
+              <div style="padding: 15px; background: #fef3c7; border-radius: 6px; text-align: center;">
+                <div style="font-size: 28px; font-weight: bold; color: #92400e;">${sections.crawl.links?.external || 0}</div>
+                <div style="font-size: 13px; color: #78350f; margin-top: 5px;">External Links</div>
+                <div style="font-size: 11px; color: #451a03; margin-top: 3px;">Links to other websites</div>
+              </div>
+              <div style="padding: 15px; background: #f3f4f6; border-radius: 6px; text-align: center;">
+                <div style="font-size: 28px; font-weight: bold; color: #374151;">${sections.crawl.links?.total || 0}</div>
+                <div style="font-size: 13px; color: #4b5563; margin-top: 5px;">Total Links</div>
+              </div>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #f0fdf4; border-radius: 6px; font-size: 13px; color: #166534;">
+              <strong>✅ SEO Tip:</strong> Internal links help search engines discover and index your pages. External links to authoritative sites can boost credibility.
+            </div>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">🖼️ Images</h4>
+            <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 6px;">
+              <div style="font-size: 36px; font-weight: bold; color: #333;">${sections.crawl.images || 0}</div>
+              <div style="font-size: 14px; color: #666; margin-top: 8px;">Total Images Found</div>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 6px; font-size: 13px; color: #92400e;">
+              <strong>⚠️ Important:</strong> Ensure all images have descriptive alt text for accessibility and SEO. Check the Image Analysis section for details.
+            </div>
           </div>
         </div>
       `;
@@ -461,24 +572,71 @@ export class ReportAgent {
     // Keyword Analysis
     if (sections.keyword) {
       html += `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">🔑 Keyword Analysis</h3>
-          <p style="color: #666; margin-bottom: 15px;">Analyzed keywords and their usage in your content.</p>
-          <div style="margin-bottom: 15px;">
-            <strong>Primary Keywords:</strong>
-            <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
-              ${sections.keyword.primaryKeywords?.map(k => 
-                `<span style="background: #e0f2fe; padding: 5px 12px; border-radius: 20px; font-size: 14px;">${k.word} (${k.count}x, ${k.density}%)</span>`
-              ).join('') || '<span style="color: #999;">No keywords found</span>'}
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">🔑 Keyword Analysis</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Comprehensive keyword analysis including primary keywords, density, and optimization opportunities.</p>
+          
+          ${sections.keyword.primaryKeywords?.length > 0 ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">🎯 Primary Keywords</h4>
+              <p style="margin-bottom: 15px; font-size: 13px; color: #666;">These are the main keywords found in your content with their frequency and density.</p>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #f3f4f6;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600;">Keyword</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; font-weight: 600;">Count</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; font-weight: 600;">Density</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; font-weight: 600;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${sections.keyword.primaryKeywords.map((k, idx) => {
+                    const density = parseFloat(k.density) || 0;
+                    const status = density >= 1 && density <= 3 ? '✅ Optimal' : density < 1 ? '⚠️ Low' : '⚠️ High';
+                    const statusColor = density >= 1 && density <= 3 ? '#10b981' : '#f59e0b';
+                    return `
+                      <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px; font-weight: 600; color: #333;">${k.word || k}</td>
+                        <td style="padding: 12px; text-align: center; color: #666;">${k.count || 0}</td>
+                        <td style="padding: 12px; text-align: center; color: #666;">${density.toFixed(2)}%</td>
+                        <td style="padding: 12px; text-align: center; color: ${statusColor}; font-weight: 600; font-size: 12px;">${status}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+              <div style="margin-top: 15px; padding: 12px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+                <strong>💡 Keyword Density Guide:</strong> Optimal keyword density is 1-3%. Too low (under 1%) may not signal relevance, while too high (over 3%) can be seen as keyword stuffing.
+              </div>
             </div>
-          </div>
+          ` : '<div style="background: #fee2e2; padding: 15px; border-radius: 6px; margin-bottom: 20px;"><p style="margin: 0; color: #991b1b;">⚠️ No primary keywords detected. Consider adding relevant keywords to your content.</p></div>'}
+          
           ${sections.keyword.missingKeywords?.length > 0 ? `
-            <div style="margin-top: 15px;">
-              <strong>Missing Keywords:</strong>
-              <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+              <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">⚠️ Missing Keywords</h4>
+              <p style="margin-bottom: 15px; font-size: 13px; color: #666;">These keywords are relevant to your content but were not found. Consider incorporating them naturally.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                 ${sections.keyword.missingKeywords.map(k => 
-                  `<span style="background: #fee2e2; padding: 5px 12px; border-radius: 20px; font-size: 14px;">${k}</span>`
+                  `<span style="background: #fef3c7; color: #92400e; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">${k}</span>`
                 ).join('')}
+              </div>
+              <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 6px; font-size: 13px; color: #92400e;">
+                <strong>💡 Recommendation:</strong> Naturally incorporate these keywords into your headings, first paragraph, and throughout your content to improve SEO relevance.
+              </div>
+            </div>
+          ` : ''}
+          
+          ${sections.keyword.longTailSuggestions?.length > 0 ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+              <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">💡 Long-Tail Keyword Suggestions</h4>
+              <p style="margin-bottom: 15px; font-size: 13px; color: #666;">Long-tail keywords are more specific phrases that often have less competition and higher conversion rates.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                ${sections.keyword.longTailSuggestions.map(k => 
+                  `<span style="background: #d1fae5; color: #065f46; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">${k}</span>`
+                ).join('')}
+              </div>
+              <div style="margin-top: 15px; padding: 12px; background: #d1fae5; border-radius: 6px; font-size: 13px; color: #065f46;">
+                <strong>✅ SEO Advantage:</strong> Long-tail keywords are easier to rank for and often attract more qualified traffic with higher intent to convert.
               </div>
             </div>
           ` : ''}
@@ -492,26 +650,73 @@ export class ReportAgent {
       const readabilityScore = readability?.fleschScore || readability?.score || 0;
       const readabilityLabel = readability?.readability || 'N/A';
       const scoreColor = readabilityScore > 60 ? '#10b981' : readabilityScore > 30 ? '#f59e0b' : '#ef4444';
+      // Ensure avgSentenceLength is a number
+      const avgSentenceLength = typeof readability?.avgSentenceLength === 'number' 
+        ? readability.avgSentenceLength 
+        : (typeof readability?.avgSentenceLength === 'string' 
+          ? parseFloat(readability.avgSentenceLength) || 0 
+          : 0);
+      const sentenceStatus = avgSentenceLength <= 20 ? '✅ Good' : avgSentenceLength <= 25 ? '⚠️ Acceptable' : '❌ Too Long';
+      const sentenceColor = avgSentenceLength <= 20 ? '#10b981' : avgSentenceLength <= 25 ? '#f59e0b' : '#ef4444';
       
       html += `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">📝 Content Quality Analysis</h3>
-          <p style="color: #666; margin-bottom: 15px;">Analyzed content quality, readability, and structure.</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div>
-              <strong>Readability:</strong> 
-              <span style="color: ${scoreColor}; font-weight: bold;">${readabilityLabel}</span>
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">📝 Content Quality Analysis</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Detailed analysis of content readability, structure, and SEO optimization.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📊 Readability Metrics</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+              <div style="text-align: center; padding: 20px; background: ${scoreColor === '#10b981' ? '#d1fae5' : scoreColor === '#f59e0b' ? '#fef3c7' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${scoreColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Readability Score</div>
+                <div style="font-size: 42px; font-weight: bold; color: ${scoreColor}; margin: 10px 0;">${readabilityScore}</div>
+                <div style="font-size: 13px; color: ${scoreColor}; font-weight: 600;">${readabilityLabel}</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Word Count</div>
+                <div style="font-size: 36px; font-weight: bold; color: #333; margin: 10px 0;">${readability?.wordCount || 0}</div>
+                <div style="font-size: 12px; color: #666;">words</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Sentences</div>
+                <div style="font-size: 36px; font-weight: bold; color: #333; margin: 10px 0;">${readability?.sentenceCount || 0}</div>
+                <div style="font-size: 12px; color: #666;">sentences</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: ${sentenceColor === '#10b981' ? '#d1fae5' : sentenceColor === '#f59e0b' ? '#fef3c7' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${sentenceColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Avg Sentence Length</div>
+                <div style="font-size: 36px; font-weight: bold; color: ${sentenceColor}; margin: 10px 0;">${typeof avgSentenceLength === 'number' && !isNaN(avgSentenceLength) ? avgSentenceLength.toFixed(1) : '0.0'}</div>
+                <div style="font-size: 13px; color: ${sentenceColor}; font-weight: 600;">${sentenceStatus}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">Target: 15-20 words</div>
+              </div>
             </div>
-            <div><strong>Readability Score:</strong> ${readabilityScore}</div>
-            <div><strong>Word Count:</strong> ${readability?.wordCount || 0}</div>
-            <div><strong>Sentence Count:</strong> ${readability?.sentenceCount || 0}</div>
-            <div><strong>Avg Sentence Length:</strong> ${readability?.avgSentenceLength || 0} words</div>
+            <div style="padding: 15px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>📖 Readability Guide:</strong> 
+              <ul style="margin: 8px 0 0 20px; padding: 0;">
+                <li><strong>90-100:</strong> Very Easy (5th grade level) - Best for general audiences</li>
+                <li><strong>60-70:</strong> Easy (8th-9th grade level) - Good for most content</li>
+                <li><strong>30-50:</strong> Difficult (College level) - May reduce engagement</li>
+                <li><strong>0-30:</strong> Very Difficult (Graduate level) - Not recommended for web content</li>
+              </ul>
+            </div>
           </div>
+          
           ${sections.content.keywordPlacement?.issues?.length > 0 ? `
-            <div style="margin-top: 15px; padding: 15px; background: #fee2e2; border-radius: 6px;">
-              <strong style="color: #991b1b;">⚠️ Keyword Placement Issues:</strong>
-              <ul style="margin: 10px 0 0 20px; color: #7f1d1d;">
-                ${sections.content.keywordPlacement.issues.map(issue => `<li>${issue}</li>`).join('')}
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ef4444;">
+              <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">⚠️ Keyword Placement Issues</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">
+                ${sections.content.keywordPlacement.issues.map(issue => `<li style="margin-bottom: 8px;">${issue}</li>`).join('')}
+              </ul>
+              <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 6px; font-size: 13px; color: #92400e;">
+                <strong>💡 Best Practice:</strong> Place your primary keyword in the title tag, first paragraph, at least one H2 heading, and naturally throughout the content. Avoid keyword stuffing.
+              </div>
+            </div>
+          ` : ''}
+          
+          ${sections.content.structure?.issues?.length > 0 ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📐 Content Structure Issues</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #78350f;">
+                ${sections.content.structure.issues.map(issue => `<li style="margin-bottom: 8px;">${issue}</li>`).join('')}
               </ul>
             </div>
           ` : ''}
@@ -521,15 +726,90 @@ export class ReportAgent {
     
     // Technical SEO
     if (sections.technical) {
+      const mobileStatus = sections.technical.mobile?.isResponsive ? '✅ Mobile-friendly' : '❌ Not mobile-friendly';
+      const mobileColor = sections.technical.mobile?.isResponsive ? '#10b981' : '#ef4444';
+      const httpsStatus = sections.technical.security?.isHTTPS ? '✅ Using HTTPS' : '❌ Not using HTTPS';
+      const httpsColor = sections.technical.security?.isHTTPS ? '#10b981' : '#ef4444';
+      const altCoverage = sections.technical.accessibility?.altCoverage || 0;
+      const altColor = altCoverage >= 80 ? '#10b981' : altCoverage >= 50 ? '#f59e0b' : '#ef4444';
+      
       html += `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">⚙️ Technical SEO Analysis</h3>
-          <p style="color: #666; margin-bottom: 15px;">Analyzed technical aspects: mobile-friendliness, accessibility, security, and performance.</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-            <div><strong>Mobile:</strong> ${sections.technical.mobile?.isResponsive ? '✅ Mobile-friendly' : '❌ Not mobile-friendly'}</div>
-            <div><strong>HTTPS:</strong> ${sections.technical.security?.isHTTPS ? '✅ Using HTTPS' : '❌ Not using HTTPS'}</div>
-            <div><strong>Alt Text Coverage:</strong> ${sections.technical.accessibility?.altCoverage || 0}%</div>
-            <div><strong>Images Without Alt:</strong> ${sections.technical.accessibility?.imagesWithoutAlt || 0}</div>
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">⚙️ Technical SEO Analysis</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Comprehensive technical analysis covering mobile-friendliness, accessibility, security, and performance metrics.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📱 Mobile Optimization</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+              <div style="padding: 15px; background: ${mobileColor === '#10b981' ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; border: 2px solid ${mobileColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Mobile Responsiveness</div>
+                <div style="font-size: 18px; font-weight: 600; color: ${mobileColor};">${mobileStatus}</div>
+                ${!sections.technical.mobile?.hasViewport ? `
+                  <div style="margin-top: 10px; padding: 10px; background: #fee2e2; border-radius: 4px; font-size: 12px; color: #991b1b;">
+                    ⚠️ Missing viewport meta tag
+                  </div>
+                ` : ''}
+              </div>
+              <div style="padding: 15px; background: #f3f4f6; border-radius: 6px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Viewport Tag</div>
+                <div style="font-size: 18px; font-weight: 600; color: #333;">
+                  ${sections.technical.mobile?.hasViewport ? '✅ Present' : '❌ Missing'}
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>💡 Mobile-First Indexing:</strong> Google uses mobile-first indexing. A mobile-friendly site is essential for ranking well in search results.
+            </div>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">🔒 Security & Performance</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+              <div style="padding: 15px; background: ${httpsColor === '#10b981' ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; border: 2px solid ${httpsColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">HTTPS Status</div>
+                <div style="font-size: 18px; font-weight: 600; color: ${httpsColor};">${httpsStatus}</div>
+                ${!sections.technical.security?.isHTTPS ? `
+                  <div style="margin-top: 10px; padding: 10px; background: #fee2e2; border-radius: 4px; font-size: 12px; color: #991b1b;">
+                    ⚠️ Critical: Switch to HTTPS for security and SEO
+                  </div>
+                ` : ''}
+              </div>
+              ${sections.technical.coreWebVitals ? `
+                <div style="padding: 15px; background: #f3f4f6; border-radius: 6px;">
+                  <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Core Web Vitals</div>
+                  <div style="font-size: 12px; color: #666;">
+                    <div>LCP: ${sections.technical.coreWebVitals.lcp?.estimated || 'N/A'}</div>
+                    <div>FID: ${sections.technical.coreWebVitals.fid?.estimated || 'N/A'}</div>
+                    <div>CLS: ${sections.technical.coreWebVitals.cls?.estimated || 'N/A'}</div>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: ${httpsColor === '#10b981' ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; font-size: 13px; color: ${httpsColor === '#10b981' ? '#065f46' : '#991b1b'};">
+              <strong>${httpsColor === '#10b981' ? '✅' : '⚠️'} HTTPS Impact:</strong> 
+              ${httpsColor === '#10b981' 
+                ? 'Your site is secure. HTTPS is a ranking factor and builds user trust.' 
+                : 'HTTPS is required for modern web standards. Google may penalize HTTP sites and browsers show security warnings.'}
+            </div>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">♿ Accessibility</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px;">
+              <div style="padding: 15px; background: ${altColor === '#10b981' ? '#d1fae5' : altColor === '#f59e0b' ? '#fef3c7' : '#fee2e2'}; border-radius: 6px; border: 2px solid ${altColor}; text-align: center;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Alt Text Coverage</div>
+                <div style="font-size: 32px; font-weight: bold; color: ${altColor}; margin: 10px 0;">${altCoverage}%</div>
+                <div style="font-size: 12px; color: #666;">${altCoverage >= 80 ? 'Excellent' : altCoverage >= 50 ? 'Needs Improvement' : 'Poor'}</div>
+              </div>
+              <div style="padding: 15px; background: #f3f4f6; border-radius: 6px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Images Without Alt</div>
+                <div style="font-size: 28px; font-weight: bold; color: #333;">${sections.technical.accessibility?.imagesWithoutAlt || 0}</div>
+                <div style="font-size: 12px; color: #666;">images need alt text</div>
+              </div>
+            </div>
+            <div style="padding: 12px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>♿ Accessibility Benefits:</strong> Alt text helps screen readers, improves image SEO, and ensures compliance with WCAG accessibility standards. Images with descriptive alt text can appear in Google Image Search results.
+            </div>
           </div>
         </div>
       `;
@@ -537,13 +817,50 @@ export class ReportAgent {
     
     // Schema Markup
     if (sections.schema) {
+      const schemaCount = sections.schema.existing || 0;
+      const schemaStatus = schemaCount > 0 ? '✅ Schema Found' : '❌ No Schema Detected';
+      const schemaColor = schemaCount > 0 ? '#10b981' : '#ef4444';
+      
       html += `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">📋 Schema Markup Analysis</h3>
-          <p style="color: #666; margin-bottom: 15px;">Analyzed structured data and schema markup on your page.</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div><strong>Existing Schema:</strong> ${sections.schema.existing || 0}</div>
-            <div><strong>Recommended Schema:</strong> ${sections.schema.recommended || 0}</div>
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">📋 Schema Markup Analysis</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Structured data helps search engines understand your content and can enable rich results in search.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+              <div style="text-align: center; padding: 20px; background: ${schemaColor === '#10b981' ? '#d1fae5' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${schemaColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Schema Status</div>
+                <div style="font-size: 18px; font-weight: 600; color: ${schemaColor}; margin: 10px 0;">${schemaStatus}</div>
+                <div style="font-size: 24px; font-weight: bold; color: ${schemaColor}; margin-top: 10px;">${schemaCount}</div>
+                <div style="font-size: 12px; color: #666;">schema types found</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Recommended</div>
+                <div style="font-size: 24px; font-weight: bold; color: #333; margin: 10px 0;">${sections.schema.recommended || 0}</div>
+                <div style="font-size: 12px; color: #666;">additional schema types</div>
+              </div>
+            </div>
+            
+            ${sections.schema.detected?.length > 0 ? `
+              <div style="margin-bottom: 15px;">
+                <strong style="display: block; margin-bottom: 10px; color: #333;">Detected Schema Types:</strong>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  ${sections.schema.detected.map(type => 
+                    `<span style="background: #d1fae5; color: #065f46; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">${type}</span>`
+                  ).join('')}
+                </div>
+              </div>
+            ` : ''}
+            
+            <div style="padding: 15px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>💡 Schema Benefits:</strong> 
+              <ul style="margin: 8px 0 0 20px; padding: 0;">
+                <li>Enables rich snippets in search results (stars, prices, dates, etc.)</li>
+                <li>Helps search engines understand your content better</li>
+                <li>Can improve click-through rates from search results</li>
+                <li>Common schemas: Article, Product, FAQ, Organization, BreadcrumbList</li>
+              </ul>
+            </div>
           </div>
         </div>
       `;
@@ -551,14 +868,106 @@ export class ReportAgent {
     
     // Image Analysis
     if (sections.image) {
+      const totalImages = sections.image.total || 0;
+      const withAlt = sections.image.withAlt || 0;
+      const withoutAlt = sections.image.withoutAlt || 0;
+      const altPercentage = totalImages > 0 ? Math.round((withAlt / totalImages) * 100) : 0;
+      const altColor = altPercentage >= 80 ? '#10b981' : altPercentage >= 50 ? '#f59e0b' : '#ef4444';
+      
       html += `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">🖼️ Image Optimization Analysis</h3>
-          <p style="color: #666; margin-bottom: 15px;">Analyzed images for SEO, accessibility, and performance.</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div><strong>Total Images:</strong> ${sections.image.total || 0}</div>
-            <div><strong>With Alt Text:</strong> ${sections.image.withAlt || 0}</div>
-            <div><strong>Without Alt Text:</strong> ${sections.image.withoutAlt || 0}</div>
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">🖼️ Image Optimization Analysis</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Comprehensive analysis of images for SEO, accessibility, and performance optimization.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📊 Image Statistics</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+              <div style="text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Total Images</div>
+                <div style="font-size: 36px; font-weight: bold; color: #333;">${totalImages}</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: ${altColor === '#10b981' ? '#d1fae5' : altColor === '#f59e0b' ? '#fef3c7' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${altColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Alt Text Coverage</div>
+                <div style="font-size: 36px; font-weight: bold; color: ${altColor};">${altPercentage}%</div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">${withAlt} of ${totalImages} images</div>
+              </div>
+              ${withoutAlt > 0 ? `
+                <div style="text-align: center; padding: 20px; background: #fee2e2; border-radius: 8px; border: 2px solid #ef4444;">
+                  <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Missing Alt Text</div>
+                  <div style="font-size: 36px; font-weight: bold; color: #ef4444;">${withoutAlt}</div>
+                  <div style="font-size: 12px; color: #991b1b; margin-top: 5px;">needs attention</div>
+                </div>
+              ` : ''}
+            </div>
+            
+            ${withoutAlt > 0 ? `
+              <div style="padding: 15px; background: #fee2e2; border-radius: 6px; border-left: 4px solid #ef4444; margin-bottom: 15px;">
+                <strong style="color: #991b1b; display: block; margin-bottom: 8px;">⚠️ Action Required:</strong>
+                <p style="margin: 0; color: #7f1d1d; font-size: 13px;">
+                  ${withoutAlt} image${withoutAlt > 1 ? 's' : ''} ${withoutAlt > 1 ? 'are' : 'is'} missing alt text. 
+                  Add descriptive alt attributes to improve accessibility and SEO.
+                </p>
+              </div>
+            ` : ''}
+            
+            <div style="padding: 15px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>🖼️ Image SEO Best Practices:</strong>
+              <ul style="margin: 8px 0 0 20px; padding: 0;">
+                <li><strong>Alt Text:</strong> Write descriptive alt text (5-125 characters) that describes what's in the image</li>
+                <li><strong>File Names:</strong> Use descriptive, keyword-rich file names (e.g., "blue-cotton-t-shirt.jpg" not "img123.jpg")</li>
+                <li><strong>Optimization:</strong> Compress images to reduce file size and improve page load speed</li>
+                <li><strong>Format:</strong> Use modern formats like WebP when possible for better compression</li>
+                <li><strong>SEO Impact:</strong> Images with proper alt text can appear in Google Image Search, driving additional traffic</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Validation
+    if (sections.validation) {
+      const qualityScore = sections.validation.qualityScore || 0;
+      const qualityColor = qualityScore >= 80 ? '#10b981' : qualityScore >= 60 ? '#f59e0b' : '#ef4444';
+      const overallStatus = sections.validation.overall || 'unknown';
+      
+      html += `
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; color: #333; font-size: 20px;">✅ Content Validation & Quality Check</h3>
+          <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Comprehensive validation of content quality, uniqueness, and SEO compliance.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">📊 Quality Metrics</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+              <div style="text-align: center; padding: 20px; background: ${qualityColor === '#10b981' ? '#d1fae5' : qualityColor === '#f59e0b' ? '#fef3c7' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${qualityColor};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Quality Score</div>
+                <div style="font-size: 42px; font-weight: bold; color: ${qualityColor}; margin: 10px 0;">${qualityScore}</div>
+                <div style="font-size: 13px; color: ${qualityColor}; font-weight: 600;">${qualityScore >= 80 ? 'Excellent' : qualityScore >= 60 ? 'Good' : 'Needs Improvement'}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">Target: 80+</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Overall Status</div>
+                <div style="font-size: 18px; font-weight: 600; color: #333; margin: 10px 0; text-transform: capitalize;">${overallStatus}</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: ${sections.validation.uniqueness === '✅ Unique' ? '#d1fae5' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${sections.validation.uniqueness === '✅ Unique' ? '#10b981' : '#ef4444'};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Uniqueness</div>
+                <div style="font-size: 18px; font-weight: 600; color: ${sections.validation.uniqueness === '✅ Unique' ? '#10b981' : '#ef4444'}; margin: 10px 0;">${sections.validation.uniqueness}</div>
+              </div>
+              <div style="text-align: center; padding: 20px; background: ${sections.validation.seoCompliance === '✅ Compliant' ? '#d1fae5' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${sections.validation.seoCompliance === '✅ Compliant' ? '#10b981' : '#ef4444'};">
+                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">SEO Compliance</div>
+                <div style="font-size: 18px; font-weight: 600; color: ${sections.validation.seoCompliance === '✅ Compliant' ? '#10b981' : '#ef4444'}; margin: 10px 0;">${sections.validation.seoCompliance}</div>
+              </div>
+            </div>
+            
+            <div style="padding: 15px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>📋 Validation Criteria:</strong>
+              <ul style="margin: 8px 0 0 20px; padding: 0;">
+                <li><strong>Quality Score:</strong> Measures content quality, readability, structure, and SEO optimization (Target: 80+)</li>
+                <li><strong>Uniqueness:</strong> Ensures content is original and not duplicated from other sources</li>
+                <li><strong>SEO Compliance:</strong> Verifies adherence to SEO best practices and search engine guidelines</li>
+                <li><strong>Overall Status:</strong> Combined assessment of all validation criteria</li>
+              </ul>
+            </div>
           </div>
         </div>
       `;
@@ -568,26 +977,80 @@ export class ReportAgent {
     return html;
   }
 
+  generateLighthouseScoresHTML(lighthouse) {
+    if (!lighthouse) return '';
+    
+    const scores = [
+      { name: 'Performance', score: lighthouse.performance?.score || 0, color: lighthouse.performance?.score >= 90 ? '#10b981' : lighthouse.performance?.score >= 50 ? '#f59e0b' : '#ef4444' },
+      { name: 'Accessibility', score: lighthouse.accessibility?.score || 0, color: lighthouse.accessibility?.score >= 90 ? '#10b981' : lighthouse.accessibility?.score >= 50 ? '#f59e0b' : '#ef4444' },
+      { name: 'Best Practices', score: lighthouse.bestPractices?.score || 0, color: lighthouse.bestPractices?.score >= 90 ? '#10b981' : lighthouse.bestPractices?.score >= 50 ? '#f59e0b' : '#ef4444' },
+      { name: 'SEO', score: lighthouse.seo?.score || 0, color: lighthouse.seo?.score >= 90 ? '#10b981' : lighthouse.seo?.score >= 50 ? '#f59e0b' : '#ef4444' }
+    ];
+    
+    let html = '<div class="section"><h2>📊 Lighthouse Scores</h2>';
+    html += '<p style="margin-bottom: 20px; color: #666;">Google Lighthouse metrics for performance, accessibility, best practices, and SEO.</p>';
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">';
+    
+    scores.forEach(score => {
+      html += `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border: 2px solid ${score.color};">
+          <h3 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">${score.name}</h3>
+          <div style="font-size: 48px; font-weight: bold; color: ${score.color}; margin: 15px 0;">${score.score}</div>
+          <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 10px;">
+            <div style="width: ${score.score}%; height: 100%; background: ${score.color}; transition: width 0.3s;"></div>
+          </div>
+          <p style="margin-top: 10px; font-size: 12px; color: #666;">
+            ${score.score >= 90 ? '✅ Excellent' : score.score >= 50 ? '⚠️ Needs Improvement' : '❌ Poor'}
+          </p>
+        </div>
+      `;
+    });
+    
+    html += '</div></div>';
+    return html;
+  }
+
   generateMetaHTML(meta) {
     if (!meta.title && !meta.metaDescription) return '';
     
     return `
       <div class="meta-optimization">
-        <h3>Meta Tag Optimization</h3>
+        <h3>🏷️ Meta Tag Optimization</h3>
+        <p style="margin-bottom: 20px; color: #666;">Meta tags are crucial for SEO and appear in search engine results pages (SERPs).</p>
         ${meta.title ? `
-          <div class="meta-item">
-            <strong>Title:</strong>
-            <div class="current">Current: ${meta.title.current || 'Missing'}</div>
-            <div class="optimized">Optimized: ${meta.title.optimized}</div>
-            <div style="margin-top: 5px; font-size: 12px; color: #666;">Length: ${meta.title.length} characters (Optimal: 30-60)</div>
+          <div class="meta-item" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+            <strong style="display: block; margin-bottom: 10px; color: #333; font-size: 16px;">Title Tag</strong>
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Current Title:</div>
+              <div class="current" style="background: #fee2e2; padding: 10px; border-radius: 4px; border-left: 3px solid #ef4444;">${meta.title.current || 'Missing'}</div>
+              <div style="margin-top: 5px; font-size: 11px; color: #666;">Length: ${meta.title.length} characters ${meta.title.length < 30 || meta.title.length > 60 ? '(⚠️ Not optimal)' : '(✅ Optimal)'}</div>
+            </div>
+            <div>
+              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Optimized Title:</div>
+              <div class="optimized" style="background: #d1fae5; padding: 10px; border-radius: 4px; border-left: 3px solid #10b981;">${meta.title.optimized || 'N/A'}</div>
+              <div style="margin-top: 5px; font-size: 11px; color: #666;">Optimal length: 30-60 characters for full display in search results</div>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>💡 Why this matters:</strong> Title tags are the first thing users see in search results. A well-optimized title improves click-through rates and SEO rankings.
+            </div>
           </div>
         ` : ''}
         ${meta.metaDescription ? `
-          <div class="meta-item">
-            <strong>Meta Description:</strong>
-            <div class="current">Current: ${meta.metaDescription.current || 'Missing'}</div>
-            <div class="optimized">Optimized: ${meta.metaDescription.optimized}</div>
-            <div style="margin-top: 5px; font-size: 12px; color: #666;">Length: ${meta.metaDescription.length} characters (Optimal: 150-160)</div>
+          <div class="meta-item" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+            <strong style="display: block; margin-bottom: 10px; color: #333; font-size: 16px;">Meta Description</strong>
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Current Description:</div>
+              <div class="current" style="background: #fee2e2; padding: 10px; border-radius: 4px; border-left: 3px solid #ef4444;">${meta.metaDescription.current || 'Missing'}</div>
+              <div style="margin-top: 5px; font-size: 11px; color: #666;">Length: ${meta.metaDescription.length} characters ${meta.metaDescription.length < 120 || meta.metaDescription.length > 160 ? '(⚠️ Not optimal)' : '(✅ Optimal)'}</div>
+            </div>
+            <div>
+              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Optimized Description:</div>
+              <div class="optimized" style="background: #d1fae5; padding: 10px; border-radius: 4px; border-left: 3px solid #10b981;">${meta.metaDescription.optimized || 'N/A'}</div>
+              <div style="margin-top: 5px; font-size: 11px; color: #666;">Optimal length: 120-160 characters for full display in search results</div>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #eff6ff; border-radius: 6px; font-size: 13px; color: #1e40af;">
+              <strong>💡 Why this matters:</strong> Meta descriptions appear below titles in search results. Compelling descriptions increase click-through rates and can improve rankings.
+            </div>
           </div>
         ` : ''}
       </div>
