@@ -541,7 +541,7 @@ function AnalyzePageContent() {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Choose how you want to view your SEO analysis results</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {pdfFilename && (
+                    {/* {pdfFilename && (
                       <button
                         onClick={handleDownloadPDF}
                         className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 dark:hover:from-green-600 dark:hover:to-emerald-600 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
@@ -551,7 +551,7 @@ function AnalyzePageContent() {
                         </svg>
                         Download PDF Report
                       </button>
-                    )}
+                    )} */}
                     <button
                       onClick={() => setViewMode('dashboard')}
                       className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
