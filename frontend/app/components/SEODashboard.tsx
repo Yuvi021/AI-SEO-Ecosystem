@@ -369,6 +369,7 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
         </motion.div>
 
         {/* Performance Score with Website Preview */}
+        {/* Lighthouse Scores - Combined Performance & All Metrics */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -376,195 +377,20 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
           className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 p-8"
         >
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <span className="text-3xl">⚡</span>
-            Performance
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Performance Score Gauge */}
-            <div className="flex flex-col items-center justify-center">
-              <LighthouseScoreCard
-                title="Performance"
-                score={dashboardData.lighthouse.performance}
-                icon="⚡"
-                description="Website loading speed and Core Web Vitals"
-                color="blue"
-                progress={progress}
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center max-w-md">
-                Values are estimated and may vary. The performance score is calculated directly from these metrics.
-              </p>
-              {/* Score Legend */}
-              <div className="flex items-center gap-4 mt-4 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-gray-600 dark:text-gray-400">0-49</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                  <span className="text-gray-600 dark:text-gray-400">50-89</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-gray-600 dark:text-gray-400">90-100</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Website Preview */}
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Website Preview</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Note: Many websites block iframe embedding for security. If preview doesn't load, use "Open in new tab".
-                  </p>
-                </div>
-                {previewUrl && (
-                  <a
-                    href={previewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 whitespace-nowrap ml-4"
-                  >
-                    <span>Open in new tab</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-              <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-lg bg-white">
-                <div className="absolute top-0 left-0 right-0 h-8 bg-gray-100 dark:bg-gray-800 flex items-center px-3 gap-2 z-10">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  </div>
-                  <div className="flex-1 bg-white dark:bg-gray-700 rounded px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300 truncate">
-                    {previewUrl || 'No URL available'}
-                  </div>
-                </div>
-                {/* <div className="pt-8 h-[500px] overflow-hidden relative bg-gray-50 dark:bg-gray-900">
-                  {previewUrl ? (
-                    <>
-                      {isLoadingPreview && !previewError && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 z-20">
-                          <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto mb-4"></div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Loading preview...</p>
-                          </div>
-                        </div>
-                      )}
-                      {previewError ? (
-                        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                          <div className="text-center p-6">
-                            <div className="text-5xl mb-4">🔒</div>
-                            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                              Preview Unavailable
-                            </p>
-
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 max-w-sm">
-                              {previewError}
-                            </p>
-
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mb-4 max-w-sm">
-                              Many websites block iframe embedding. This cannot be bypassed by the browser.
-                            </p>
-
-                            <a
-                              href={previewUrl || undefined}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors text-sm"
-                            >
-                              <span>Open Website in New Tab</span>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </a>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <iframe
-                            key={previewUrl}
-                            src={previewUrl || undefined}
-                            className="w-full h-full border-0"
-                            title="Website Preview"
-                            sandbox="allow-scripts allow-same-origin allow-popups"
-                            loading="lazy"
-                            onLoad={(e) => {
-                              setIsLoadingPreview(false);
-
-                              const iframe = e.target as HTMLIFrameElement;
-
-                              // Delay detection slightly to allow redirect errors
-                              setTimeout(() => {
-                                try {
-                                  // Attempt to check the iframe's document
-                                  const doc = iframe.contentDocument;
-
-                                  if (!doc || !doc.body) {
-                                    throw new Error("No access to iframe document");
-                                  }
-
-                                  if (doc.body.innerHTML.length < 20) {
-                                    // Very small content = likely blocked or blank
-                                    throw new Error("Iframe content blocked or empty");
-                                  }
-
-                                  // If we reach here, content loaded successfully
-                                  setPreviewError(null);
-                                } catch (error) {
-                                  setPreviewError(
-                                    "This website cannot be previewed because it blocks iframe embedding (X-Frame-Options / CSP)."
-                                  );
-                                }
-                              }, 500);
-                            }}
-                            onError={() => {
-                              setIsLoadingPreview(false);
-                              setPreviewError(
-                                "Failed to load preview — the website may block iframe embedding."
-                              );
-                            }}
-                          />
-
-                          {!isLoadingPreview && !previewError && (
-                            <div className="absolute bottom-4 left-4 right-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-xs text-blue-800 dark:text-blue-200 z-30 pointer-events-none">
-                              <p className="font-semibold mb-1">💡 Preview Note</p>
-                              <p>If the preview appears blank, the website might block iframes.</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">🌐</div>
-                        <p>No URL available for preview</p>
-                      </div>
-                    </div>
-                  )}
-                </div> */}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Lighthouse Scores - Similar to Google Lighthouse */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl border-2 border-cyan-100 dark:border-cyan-900/50 p-8"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <span className="text-3xl">📊</span>
             Lighthouse Scores
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Performance */}
+            <LighthouseScoreCard
+              title="Performance"
+              score={dashboardData.lighthouse.performance}
+              icon="⚡"
+              description="Website loading speed and Core Web Vitals"
+              color="blue"
+              progress={progress}
+            />
             {/* Accessibility */}
             <LighthouseScoreCard
               title="Accessibility"
@@ -593,6 +419,26 @@ export default function SEODashboard({ results, url, progress = 100 }: SEODashbo
               progress={progress}
             />
           </div>
+
+          {/* Score Legend */}
+          <div className="flex items-center justify-center gap-6 mt-6 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <span className="text-gray-600 dark:text-gray-400">0-49 Poor</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+              <span className="text-gray-600 dark:text-gray-400">50-89 Needs Improvement</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-gray-600 dark:text-gray-400">90-100 Good</span>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+            Values are estimated and may vary. Scores are calculated based on Google Lighthouse metrics.
+          </p>
         </motion.div>
 
         {/* Quick Stats */}
