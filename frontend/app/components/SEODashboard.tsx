@@ -7,15 +7,17 @@ import { AGENTS } from '../lib/constants';
 interface SEODashboardProps {
   results: Record<string, Record<string, any>>;
   url?: string;
+  progress?: number;
 }
 
 // Lighthouse Score Card Component
-function LighthouseScoreCard({ title, score, icon, description, color }: {
+function LighthouseScoreCard({ title, score, icon, description, color, progress = 100 }: {
   title: string;
   score: number;
   icon: string;
   description: string;
   color: 'blue' | 'green' | 'purple' | 'orange';
+  progress?: number;
 }) {
   const scoreColor = score >= 90 ? 'text-green-600 dark:text-green-400' :
     score >= 50 ? 'text-orange-600 dark:text-orange-400' :
@@ -37,7 +39,7 @@ function LighthouseScoreCard({ title, score, icon, description, color }: {
 
   // Calculate stroke-dasharray for circular progress
   const circumference = 2 * Math.PI * 45; // radius = 45
-  const offset = circumference - (score / 100) * circumference;
+  const offset = progress >= 100 ? circumference - (score / 100) * circumference : circumference;
 
   return (
     <motion.div
@@ -74,8 +76,8 @@ function LighthouseScoreCard({ title, score, icon, description, color }: {
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className={`text-3xl font-bold ${scoreColor}`}>
-                {Math.round(score)}
+              <div className={`text-3xl font-bold ${progress >= 100 && score > 0 ? scoreColor : 'text-gray-400 dark:text-gray-500'}`}>
+                {progress >= 100 && score > 0 ? Math.round(score) : '--'}
               </div>
             </div>
           </div>
@@ -104,7 +106,7 @@ const agentIcons: Record<string, string> = {
   report: '📊',
 };
 
-export default function SEODashboard({ results, url }: SEODashboardProps) {
+export default function SEODashboard({ results, url, progress = 100 }: SEODashboardProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(true);
@@ -346,10 +348,21 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
             </div>
             <div className="flex items-center gap-4">
               <div className={`${getScoreBgColor(dashboardData.overallScore)} rounded-xl p-6 text-center min-w-[120px]`}>
-                <div className={`text-4xl font-bold ${getScoreColor(dashboardData.overallScore)} mb-1`}>
-                  {dashboardData.overallScore}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Overall Score</div>
+                {progress >= 100 ? (
+                  <>
+                    <div className={`text-4xl font-bold ${getScoreColor(dashboardData.overallScore)} mb-1`}>
+                      {dashboardData.overallScore}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Overall Score</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl font-bold text-gray-400 dark:text-gray-500 mb-1">
+                      --
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Overall Score</div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -375,6 +388,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                 icon="⚡"
                 description="Website loading speed and Core Web Vitals"
                 color="blue"
+                progress={progress}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center max-w-md">
                 Values are estimated and may vary. The performance score is calculated directly from these metrics.
@@ -558,6 +572,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
               icon="♿"
               description="WCAG compliance and screen reader support"
               color="green"
+              progress={progress}
             />
             {/* Best Practices */}
             <LighthouseScoreCard
@@ -566,6 +581,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
               icon="✅"
               description="Security, modern web standards, and best practices"
               color="purple"
+              progress={progress}
             />
             {/* SEO */}
             <LighthouseScoreCard
@@ -574,6 +590,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
               icon="🔍"
               description="Search engine optimization and discoverability"
               color="orange"
+              progress={progress}
             />
           </div>
         </motion.div>
@@ -677,8 +694,8 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                     </div>
                   </div>
                   <div className={`${getScoreBgColor(agent.score)} rounded-lg px-3 py-1`}>
-                    <div className={`text-lg font-bold ${getScoreColor(agent.score)}`}>
-                      {agent.score}
+                    <div className={`text-lg font-bold ${progress >= 100 ? getScoreColor(agent.score) : 'text-gray-400 dark:text-gray-500'}`}>
+                      {progress >= 100 ? agent.score : '--'}
                     </div>
                   </div>
                 </div>
@@ -689,14 +706,16 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
               <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900/50">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Performance Score</span>
-                  <span className={`text-xs font-bold ${getScoreColor(agent.score)}`}>{agent.score}/100</span>
+                  <span className={`text-xs font-bold ${progress >= 100 ? getScoreColor(agent.score) : 'text-gray-400 dark:text-gray-500'}`}>
+                    {progress >= 100 ? `${agent.score}/100` : '--/100'}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${agent.score}%` }}
+                    animate={{ width: progress >= 100 ? `${agent.score}%` : '0%' }}
                     transition={{ duration: 1, delay: 0.2 * index }}
-                    className={`h-2 rounded-full ${agent.score >= 80 ? 'bg-green-500' : agent.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                    className={`h-2 rounded-full ${progress >= 100 ? (agent.score >= 80 ? 'bg-green-500' : agent.score >= 60 ? 'bg-yellow-500' : 'bg-red-500') : 'bg-gray-400 dark:bg-gray-500'
                       }`}
                   />
                 </div>
