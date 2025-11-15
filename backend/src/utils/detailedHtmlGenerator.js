@@ -439,7 +439,7 @@ export class DetailedHtmlGenerator {
   generateSchemaSection(data) {
     if (!data) return '';
     
-    const generated = data.generated || [];
+    const generated = data.aiGenerated || data.generated || [];
     const existing = data.existing || [];
     const recommendations = data.recommendations || [];
 
@@ -462,27 +462,6 @@ export class DetailedHtmlGenerator {
           </div>
         </div>
         <div class="section-body" id="schema-body">
-          ${generated.length > 0 ? `
-            <div class="alert alert-success">
-              <h4 style="margin-bottom: 12px;">✨ AI-Generated Schema Markup (${generated.length})</h4>
-              <p style="font-size: 13px; margin-bottom: 16px;">
-                Copy and paste these schema markups into your website's &lt;head&gt; section
-              </p>
-              ${generated.map((schema, idx) => `
-                <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid #86efac;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span style="font-weight: 600; color: #111827;">${schema['@type'] || 'Schema'} Schema</span>
-                    <button class="btn btn-primary" onclick="copyToClipboard('schema-${idx}')">
-                      📋 Copy Code
-                    </button>
-                  </div>
-                  <div class="code-block" id="schema-${idx}"><script type="application/ld+json">
-${JSON.stringify(schema, null, 2)}
-</script></div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
 
           ${existing.length > 0 ? `
             <div class="card">
