@@ -14,14 +14,7 @@ export default function Footer() {
       { label: 'Blog Generator', href: '/blog-generator' },
     ],
     company: [
-      { label: 'About Us', href: '/about' },
       { label: 'Privacy Policy', href: '/privacy-policy' },
-      { label: 'Terms of Service', href: '/terms' },
-    ],
-    resources: [
-      { label: 'Documentation', href: '/docs' },
-      { label: 'API Reference', href: '/api' },
-      { label: 'Support', href: '/support' },
     ],
   };
 
@@ -127,23 +120,6 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-
-          {/* Resources Links */}
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Resources</h3>
-            <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
         {/* Bottom Bar */}
@@ -163,18 +139,6 @@ export default function Footer() {
               className="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             >
               Privacy
-            </Link>
-            <Link
-              href="/terms"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
-            >
-              Terms
-            </Link>
-            <Link
-              href="/cookies"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
-            >
-              Cookies
             </Link>
           </div>
         </motion.div>
