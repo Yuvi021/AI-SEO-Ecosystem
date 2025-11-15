@@ -54,10 +54,11 @@ export default function BlogGenerator() {
 
     try {
       const keywordArray = keywords.split(',').map(k => k.trim()).filter(Boolean);
+      const getToken = localStorage.getItem("authToken")
       
       const response = await fetch(`${API_URL}/generate-blog`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken}` },
         body: JSON.stringify({
           topic,
           keywords: keywordArray,

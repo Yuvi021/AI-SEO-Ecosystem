@@ -23,11 +23,12 @@ export function apiRoutes(agentManager) {
       }
 
       const results = await agentManager.processURL(url, options || {});
+      
       // Attempt Cloudinary upload of the PDF report and record it
       let resultRecord = null;
       try {
-        if (results?.report?.files?.pdf && isCloudinaryReady()) {
-          const pdfFilename = results.report.files.pdf;
+        if (results?.report?.files?.detailedPdf && isCloudinaryReady()) {
+          const pdfFilename = results.report.files.detailedPdf; // Use detailed PDF instead of summary
           const pdfPath = path.join(reportsDir, pdfFilename);
           const publicId = pdfFilename; // keep identical name
 
@@ -42,10 +43,18 @@ export function apiRoutes(agentManager) {
             url,
             version,
             cloudinaryUrl: uploadRes.secure_url || uploadRes.url,
+            publicId: uploadRes.public_id,
+            pdfFilename: pdfFilename,
+            reportData: {
+              score: results.report.score,
+              timestamp: results.report.timestamp,
+              summary: results.report.summary
+            }
           });
+          
         }
       } catch (e) {
-        console.error('Report upload/save failed:', e?.message || e);
+        console.error('❌ Report upload/save failed:', e?.message || e);
       }
 
       res.json({ success: true, data: results, resultRecord });
@@ -72,6 +81,7 @@ export function apiRoutes(agentManager) {
   router.get('/analyze-stream', requireAuth, async (req, res) => {
     const { url, agents, isSitemap } = req.query;
 
+    console.log("called this one")
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
     }
@@ -145,11 +155,85 @@ export function apiRoutes(agentManager) {
         }
       }
 
+      // Ensure 'report' agent is included to generate PDF
+      const agentsToRun = selectedAgents.length > 0 ? [...selectedAgents] : [];
+      if (!agentsToRun.includes('report')) {
+        agentsToRun.push('report');
+      }
+
       // Process URLs with streaming
-      await agentManager.processURLWithStreaming(urlsToProcess, {
-        selectedAgents,
+      const allResults = await agentManager.processURLWithStreaming(urlsToProcess, {
+        selectedAgents: agentsToRun,
         onProgress: sendProgress
       });
+
+      console.log("allResults",allResults)
+
+      // Upload PDF and save to database for each processed URL
+      for (const [processedUrl, results] of Object.entries(allResults)) {
+        try {
+          // Check if report was generated
+          if (!results?.report) {
+            console.warn(`⚠️ No report generated for ${processedUrl}, skipping database save`);
+            continue;
+          }
+
+          // Check if PDF files exist
+          if (!results.report.files?.detailedPdf) {
+            console.warn(`⚠️ No detailed PDF file for ${processedUrl}, skipping database save`);
+            console.log('Available files:', results.report.files);
+            continue;
+          }
+
+          if (isCloudinaryReady()) {
+            const pdfFilename = results.report.files.detailedPdf;
+            const pdfPath = path.join(reportsDir, pdfFilename);
+            const publicId = pdfFilename;
+
+            console.log(`📤 Uploading PDF to Cloudinary: ${pdfFilename}`);
+            const uploadRes = await uploadRawFile(pdfPath, publicId);
+
+            // Save to DB with versioning
+            await ensureResultIndexes();
+            const userId = req.user?.sub || 'unknown';
+            const version = await getNextVersion(userId, processedUrl);
+            const resultRecord = await createResultRecord({
+              userId,
+              url: processedUrl,
+              version,
+              cloudinaryUrl: uploadRes.secure_url || uploadRes.url,
+              publicId: uploadRes.public_id,
+              pdfFilename: pdfFilename,
+              reportData: {
+                score: results.report.score,
+                timestamp: results.report.timestamp,
+                summary: results.report.summary
+              }
+            });
+
+            console.log(`✅ Report saved to DB: version ${version} for ${processedUrl}`);
+            
+            // Send database save confirmation to client
+            sendProgress({
+              type: 'database_saved',
+              message: 'Report saved to database',
+              url: processedUrl,
+              version: version,
+              cloudinaryUrl: uploadRes.secure_url || uploadRes.url
+            });
+          } else {
+            console.warn('⚠️ Cloudinary not configured, skipping upload');
+          }
+        } catch (e) {
+          console.error(`❌ Report upload/save failed for ${processedUrl}:`, e?.message || e);
+          console.error('Error details:', e);
+          sendProgress({
+            type: 'database_error',
+            message: `Failed to save report: ${e?.message || 'Unknown error'}`,
+            url: processedUrl
+          });
+        }
+      }
 
       // Send completion
       sendProgress({

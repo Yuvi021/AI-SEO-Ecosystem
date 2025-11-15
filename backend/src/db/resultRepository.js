@@ -17,7 +17,7 @@ export async function getNextVersion(userId, url) {
   return latestVersion + 1;
 }
 
-export async function createResultRecord({ userId, url, version, cloudinaryUrl, publicId, createdAt = new Date() }) {
+export async function createResultRecord({ userId, url, version, cloudinaryUrl, publicId, pdfFilename, reportData, createdAt = new Date() }) {
   const db = getDb();
   const collection = db.collection(RESULTS_COLLECTION);
   const doc = {
@@ -25,6 +25,9 @@ export async function createResultRecord({ userId, url, version, cloudinaryUrl, 
     url,
     version,
     cloudinaryUrl,
+    publicId,
+    pdfFilename,
+    reportData,
     createdAt,
   };
   const result = await collection.insertOne(doc);
@@ -41,7 +44,7 @@ export async function listResultsByUrl(userId, url, sortOrder = 1, version = nul
   }
   const cursor = collection
     .find(query)
-    .project({ _id: 0, url: 1, version: 1, cloudinaryUrl: 1, createdAt: 1 })
+    .project({ _id: 0, url: 1, version: 1, cloudinaryUrl: 1, publicId: 1, pdfFilename: 1, reportData: 1, createdAt: 1 })
     .sort({ version: sortOrder });
   return await cursor.toArray();
 }

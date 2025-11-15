@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { htmlToPdf } from '../utils/pdf.js';
 import { LighthouseScorer } from '../utils/lighthouseScorer.js';
+import { DetailedHtmlGenerator } from '../utils/detailedHtmlGenerator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,6 +13,7 @@ export class ReportAgent {
     this.status = 'ready';
     this.reportsDir = path.join(__dirname, '../../reports');
     this.lighthouseScorer = new LighthouseScorer();
+    this.detailedHtmlGenerator = new DetailedHtmlGenerator();
   }
 
   async generate(results, url) {
@@ -38,8 +40,9 @@ export class ReportAgent {
         lighthouse: this.lighthouseScorer.calculateAllScores(results)
       };
 
-      // Generate HTML report
-      report.html = this.generateHTMLReport(report);
+      // Generate HTML reports
+      report.html = this.generateHTMLReport(report); // Original summary report
+      report.detailedHtml = this.detailedHtmlGenerator.generate(results, url, report.timestamp); // Detailed report matching frontend
       
       // Save report
       await this.saveReport(report);
@@ -1065,31 +1068,46 @@ export class ReportAgent {
       // Generate filename
       const filename = `report_${Date.now()}_${report.url.replace(/[^a-z0-9]/gi, '_').substring(0, 50)}.json`;
       const htmlFilename = filename.replace('.json', '.html');
+      const detailedHtmlFilename = filename.replace('.json', '_detailed.html');
       const pdfFilename = filename.replace('.json', '.pdf');
+      const detailedPdfFilename = filename.replace('.json', '_detailed.pdf');
       
       // Save JSON report
       const jsonPath = path.join(this.reportsDir, filename);
       await fs.writeFile(jsonPath, JSON.stringify(report, null, 2));
       
-      // Save HTML report
+      // Save HTML reports
       const htmlPath = path.join(this.reportsDir, htmlFilename);
       await fs.writeFile(htmlPath, report.html);
 
-      // Generate PDF from HTML
+      const detailedHtmlPath = path.join(this.reportsDir, detailedHtmlFilename);
+      await fs.writeFile(detailedHtmlPath, report.detailedHtml);
+
+      // Generate PDFs from HTML
       const pdfPath = path.join(this.reportsDir, pdfFilename);
       try {
         await htmlToPdf(report.html, pdfPath);
       } catch (e) {
-        console.error('Failed to generate PDF:', e);
+        console.error('Failed to generate summary PDF:', e);
+      }
+
+      const detailedPdfPath = path.join(this.reportsDir, detailedPdfFilename);
+      try {
+        await htmlToPdf(report.detailedHtml, detailedPdfPath);
+      } catch (e) {
+        console.error('Failed to generate detailed PDF:', e);
       }
       
       report.files = {
         json: filename,
         html: htmlFilename,
-        pdf: pdfFilename
+        detailedHtml: detailedHtmlFilename,
+        pdf: pdfFilename,
+        detailedPdf: detailedPdfFilename
       };
       
       console.log(`Report saved: ${filename}`);
+      console.log(`Detailed report saved: ${detailedHtmlFilename}`);
     } catch (error) {
       console.error('Failed to save report:', error);
     }
