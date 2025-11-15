@@ -1,13 +1,16 @@
 import { openAIService } from '../utils/openaiService.js';
+import keywordDataService from '../services/keywordDataService.js';
 
 /**
  * Advanced Keyword Research Agent
  * Provides comprehensive keyword research including volume, difficulty, trends, and opportunities
  */
+
 export class KeywordResearchAgent {
   constructor() {
     this.name = 'KeywordResearchAgent';
     this.status = 'ready';
+    this.useRealTimeData = keywordDataService.isConfigured();
   }
 
   /**
@@ -76,29 +79,107 @@ export class KeywordResearchAgent {
 
   async expandKeyword(seed, options = {}) {
     const keywords = [];
+    const allKeywords = [seed];
     
-    // Add seed keyword
-    keywords.push(await this.analyzeKeyword(seed));
+    // Get real-time keyword suggestions if available
+    if (this.useRealTimeData) {
+      try {
+        const suggestions = await keywordDataService.getKeywordSuggestions(seed, 30);
+        allKeywords.push(...suggestions);
+        console.log(`✓ Got ${suggestions.length} real-time suggestions for "${seed}"`);
+      } catch (error) {
+        console.warn('Real-time suggestions failed, using fallback:', error.message);
+      }
+    }
 
-    // Generate variations
-    const variations = this.generateVariations(seed);
-    for (const variation of variations.slice(0, 10)) {
-      keywords.push(await this.analyzeKeyword(variation));
+    // Generate variations as fallback or supplement
+    if (allKeywords.length < 10) {
+      const variations = this.generateVariations(seed);
+      allKeywords.push(...variations.slice(0, 15));
     }
 
     // AI-powered expansion
-    if (openAIService.isAvailable()) {
+    if (openAIService.isAvailable() && allKeywords.length < 30) {
       try {
         const aiKeywords = await this.performAIExpansion(seed);
-        for (const kw of aiKeywords.slice(0, 15)) {
-          keywords.push(await this.analyzeKeyword(kw));
-        }
+        allKeywords.push(...aiKeywords.slice(0, 20));
       } catch (error) {
         console.warn('AI keyword expansion failed:', error.message);
       }
     }
 
+    // Remove duplicates
+    const uniqueKeywords = [...new Set(allKeywords)];
+
+    // Get real-time metrics for all keywords
+    if (this.useRealTimeData) {
+      try {
+        const metrics = await keywordDataService.getKeywordMetrics(
+          uniqueKeywords.slice(0, 50),
+          options.location || 'United States',
+          options.language || 'en'
+        );
+        
+        // Convert to our format
+        keywords.push(...metrics.map(m => this.convertToKeywordFormat(m)));
+        console.log(`✓ Got real-time metrics for ${metrics.length} keywords`);
+      } catch (error) {
+        console.warn('Real-time metrics failed, using estimates:', error.message);
+        // Fallback to estimates
+        for (const kw of uniqueKeywords.slice(0, 30)) {
+          keywords.push(await this.analyzeKeyword(kw));
+        }
+      }
+    } else {
+      // Use estimated data
+      for (const kw of uniqueKeywords.slice(0, 30)) {
+        keywords.push(await this.analyzeKeyword(kw));
+      }
+    }
+
     return keywords;
+  }
+
+  convertToKeywordFormat(metric) {
+    return {
+      keyword: metric.keyword,
+      volume: metric.volume,
+      difficulty: metric.difficulty || metric.competitionIndex || 50,
+      cpc: parseFloat(metric.cpc) || 0,
+      competition: metric.competition,
+      intent: this.detectIntent(metric.keyword),
+      trend: Array.isArray(metric.trend) && metric.trend.length > 0 ? 
+        this.analyzeTrendData(metric.trend) : 'stable',
+      opportunity: this.calculateOpportunityFromMetrics(metric),
+      source: metric.source || 'realtime',
+      realTimeData: true
+    };
+  }
+
+  analyzeTrendData(monthlyData) {
+    if (!monthlyData || monthlyData.length < 3) return 'stable';
+    
+    const recent = monthlyData.slice(-3).map(m => m.search_volume || 0);
+    const older = monthlyData.slice(0, 3).map(m => m.search_volume || 0);
+    
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+    
+    if (recentAvg > olderAvg * 1.2) return 'rising';
+    if (recentAvg < olderAvg * 0.8) return 'declining';
+    return 'stable';
+  }
+
+  calculateOpportunityFromMetrics(metric) {
+    const volume = metric.volume || 0;
+    const difficulty = metric.difficulty || metric.competitionIndex || 50;
+    
+    // Real opportunity score based on actual data
+    const score = (volume / 100) * (100 - difficulty) / 100;
+    
+    if (score > 50) return 'high';
+    if (score > 15) return 'medium';
+    return 'low';
   }
 
   async analyzeKeyword(keyword) {
@@ -480,4 +561,21 @@ Return as JSON array of topics:
   async execute(seedKeywords, options = {}) {
     return await this.research(seedKeywords, options);
   }
+
+  /**
+   * Get service status and configuration
+   */
+  getStatus() {
+    const providerInfo = keywordDataService.getProviderInfo();
+    return {
+      agent: this.name,
+      status: this.status,
+      realTimeData: this.useRealTimeData,
+      provider: providerInfo.provider,
+      configured: providerInfo.configured,
+      features: providerInfo.features
+    };
+  }
 }
+
+export default KeywordResearchAgent;

@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { API_URL } from '../lib/constants';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function BlogGenerator() {
   const [topic, setTopic] = useState('');
@@ -128,34 +129,7 @@ export default function BlogGenerator() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20">
       {/* Navigation */}
-      <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-blue-100/50 dark:border-blue-900/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-xl">
-                🤖
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI SEO Ecosystem
-              </span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/keyword-research"
-                className="px-4 py-2 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
-              >
-                Keyword Research
-              </Link>
-              <Link
-                href="/analyze"
-                className="px-4 py-2 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
-              >
-                SEO Analysis
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
@@ -671,6 +645,9 @@ export default function BlogGenerator() {
           </motion.div>
         )}
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

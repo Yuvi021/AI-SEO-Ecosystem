@@ -5,6 +5,8 @@ import { useState } from 'react';
 import ThemeToggle from './components/ThemeToggle';
 import Image from 'next/image';
 import { useAuth } from './contexts/AuthContext';
+import Header from './components/Header';
+import Footer from './components/Footer';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -162,60 +164,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-blue-600 p-2">
-                <Image src="/logo.svg" alt="AI SEO Ecosystem" width={48} height={48} className="w-full h-full object-contain" />
-              </div>
-              <div>
-                <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                  AI SEO Ecosystem
-                </span>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Multi-Agent AI</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-              {isAuthenticated ? (
-                <>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.email}
-                  </span>
-                  <button
-                    onClick={logout}
-                    className="px-6 py-2 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    Sign Out
-                  </button>
-                  <Link
-                    href="/analyze"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="px-6 py-2 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/analyze"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
@@ -493,36 +442,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-3 mb-4 md:mb-0">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-blue-600 p-2">
-                <Image src="/logo.svg" alt="AI SEO Ecosystem" width={48} height={48} className="w-full h-full object-contain" />
-              </div>
-              <div>
-                <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                  AI SEO Ecosystem
-                </span>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Multi-Agent AI</p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-4 text-sm">
-                <Link href="/privacy-policy" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  Privacy Policy
-                </Link>
-                <Link href="/terms-of-service" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  Terms of Service
-                </Link>
-              </div>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                © 2025 AI SEO Ecosystem. Powered by Multi-Agent Intelligence.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

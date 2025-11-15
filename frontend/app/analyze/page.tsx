@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import AgentSelection from '../components/AgentSelection';
 import ProgressSection from '../components/ProgressSection';
 import ResultsSection from '../components/ResultsSection';
 import SEODashboard from '../components/SEODashboard';
 import DetailedDataSections from '../components/DetailedDataSections';
-import ThemeToggle from '../components/ThemeToggle';
 import ProtectedRoute from '../components/ProtectedRoute';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { AGENTS, API_URL } from '../lib/constants';
 
 function AnalyzePageContent() {
@@ -267,60 +266,7 @@ function AnalyzePageContent() {
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#3b82f612_1px,transparent_1px),linear-gradient(to_bottom,#3b82f612_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#60a5fa08_1px,transparent_1px),linear-gradient(to_bottom,#60a5fa08_1px,transparent_1px)] pointer-events-none z-0"></div>
 
       {/* Header */}
-      <motion.header 
-        className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-cyan-100/50 dark:border-cyan-900/30 sticky top-0 z-50 shadow-sm"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 15 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                <motion.div 
-                  className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg overflow-hidden bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 p-2"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Image src="/logo.svg" alt="AI SEO Ecosystem" width={56} height={56} className="w-full h-full object-contain" />
-                </motion.div>
-                <div>
-                  <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
-                    AI SEO Ecosystem
-                  </span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Analysis Dashboard</p>
-                </div>
-              </Link>
-            </motion.div>
-            <div className="flex items-center gap-4">
-              <motion.div 
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                <motion.div 
-                  className="w-2 h-2 bg-green-500 rounded-full"
-                  animate={{ 
-                    scale: [1, 1.2, 1],
-                    opacity: [1, 0.8, 1]
-                  }}
-                  transition={{ 
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                ></motion.div>
-                <span className="text-xs font-medium text-green-700 dark:text-green-400">System Ready</span>
-              </motion.div>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </motion.header>
+      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Page Header */}
@@ -765,52 +711,7 @@ function AnalyzePageContent() {
       </main>
 
       {/* Footer */}
-      <motion.footer 
-        className="mt-16 py-8 border-t border-cyan-100/50 dark:border-cyan-900/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm relative z-10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <motion.div 
-              className="flex items-center gap-3"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 p-1.5">
-                <Image src="/logo.svg" alt="AI SEO Ecosystem" width={48} height={48} className="w-full h-full object-contain" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">AI SEO Ecosystem</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Multi-Agent Intelligence</p>
-              </div>
-            </motion.div>
-            <motion.div 
-              className="flex flex-col items-end gap-2"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="flex items-center gap-4 text-xs">
-                <Link href="/privacy-policy" className="text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                  Privacy Policy
-                </Link>
-                <Link href="/terms-of-service" className="text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                  Terms of Service
-                </Link>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                © 2025 AI SEO Ecosystem. All rights reserved.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </motion.footer>
+      <Footer />
     </div>
   );
 }

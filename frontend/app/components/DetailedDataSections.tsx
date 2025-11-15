@@ -38,6 +38,9 @@ export default function DetailedDataSections({ results }: DetailedDataSectionsPr
   const metaData = extractedData.meta;
   const imageData = extractedData.image;
   const technicalData = extractedData.technical;
+  const contentData = extractedData.content;
+  const validationData = extractedData.validation;
+  const reportData = extractedData.report;
 
   return (
     <div className="space-y-6">
@@ -68,6 +71,15 @@ export default function DetailedDataSections({ results }: DetailedDataSectionsPr
         />
       )}
 
+      {/* Content Optimization Details */}
+      {contentData && (
+        <DetailedContentSection 
+          data={contentData} 
+          isExpanded={expandedSections.has('content')}
+          onToggle={() => toggleSection('content')}
+        />
+      )}
+
       {/* Image Optimization Details */}
       {imageData && (
         <DetailedImageSection 
@@ -83,6 +95,24 @@ export default function DetailedDataSections({ results }: DetailedDataSectionsPr
           data={technicalData} 
           isExpanded={expandedSections.has('technical')}
           onToggle={() => toggleSection('technical')}
+        />
+      )}
+
+      {/* Validation & Quality Check Details */}
+      {validationData && (
+        <DetailedValidationSection 
+          data={validationData} 
+          isExpanded={expandedSections.has('validation')}
+          onToggle={() => toggleSection('validation')}
+        />
+      )}
+
+      {/* Report Generation Details */}
+      {reportData && (
+        <DetailedReportSection 
+          data={reportData} 
+          isExpanded={expandedSections.has('report')}
+          onToggle={() => toggleSection('report')}
         />
       )}
     </div>
@@ -687,6 +717,208 @@ function DetailedImageSection({ data, isExpanded, onToggle }: any) {
   );
 }
 
+// Content Optimization Section
+function DetailedContentSection({ data, isExpanded, onToggle }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-cyan-100 dark:border-cyan-900/50 overflow-hidden"
+    >
+      <div 
+        className="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-200 dark:from-yellow-900/30 dark:to-orange-800/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📝</span>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Content Optimization - AI Analysis</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Readability, structure, and content quality insights</p>
+            </div>
+          </div>
+          <svg 
+            className={`w-6 h-6 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="p-6 pt-0 space-y-6">
+          {/* Readability Analysis */}
+          {data.readability && (
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-5 border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>📖</span> Readability Analysis
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Word Count</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{data.readability.wordCount}</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Sentences</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{data.readability.sentenceCount}</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Avg Sentence</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{data.readability.avgSentenceLength}</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Flesch Score</div>
+                  <div className={`text-lg font-bold ${
+                    parseFloat(data.readability.fleschScore) > 60 ? 'text-green-600 dark:text-green-400' :
+                    parseFloat(data.readability.fleschScore) > 30 ? 'text-yellow-600 dark:text-yellow-400' :
+                    'text-red-600 dark:text-red-400'
+                  }`}>{data.readability.fleschScore}</div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Readability Level:</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    data.readability.readability === 'easy' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                    data.readability.readability === 'moderate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                    'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                  }`}>
+                    {data.readability.readability}
+                  </span>
+                </div>
+              </div>
+              {data.readability.aiImprovements && data.readability.aiImprovements.length > 0 && (
+                <div className="mt-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                  <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 mb-2">✨ AI Improvements:</div>
+                  <ul className="space-y-1">
+                    {data.readability.aiImprovements.map((improvement: string, idx: number) => (
+                      <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                        <span className="text-purple-500 mt-0.5">→</span>
+                        <span>{improvement}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Content Structure */}
+          {data.structure && (
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>🏗️</span> Content Structure
+              </h4>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded p-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">H1 Tags</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">
+                    {data.structure.hasH1 ? `✅ ${data.structure.h1Count}` : '❌ 0'}
+                  </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded p-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">H2 Tags</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{data.structure.h2Count || 0}</div>
+                </div>
+              </div>
+              {data.structure.issues && data.structure.issues.length > 0 && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border border-yellow-200 dark:border-yellow-800">
+                  <div className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-2">Structure Issues:</div>
+                  <ul className="space-y-1">
+                    {data.structure.issues.map((issue: string, idx: number) => (
+                      <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                        <span className="text-yellow-500 mt-0.5">⚠️</span>
+                        <span>{issue}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AI Suggestions */}
+          {data.aiSuggestions && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-5 border border-purple-200 dark:border-purple-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>✨</span> AI Content Suggestions
+              </h4>
+              <div className="space-y-3">
+                {data.aiSuggestions.intro && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-300 dark:border-purple-700">
+                    <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 mb-2">Suggested Introduction:</div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{data.aiSuggestions.intro}</p>
+                  </div>
+                )}
+                {data.aiSuggestions.conclusion && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-300 dark:border-purple-700">
+                    <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 mb-2">Suggested Conclusion:</div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{data.aiSuggestions.conclusion}</p>
+                  </div>
+                )}
+                {data.aiSuggestions.headings && data.aiSuggestions.headings.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-300 dark:border-purple-700">
+                    <div className="text-xs font-semibold text-purple-700 dark:text-purple-400 mb-2">Suggested Headings:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {data.aiSuggestions.headings.map((heading: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">
+                          {heading}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Content Quality */}
+          {data.contentQuality && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-5 border border-green-200 dark:border-green-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>⭐</span> Content Quality Score: {data.contentQuality.score}/100
+              </h4>
+              <div className="space-y-3">
+                {data.contentQuality.strengths && data.contentQuality.strengths.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                    <div className="text-xs font-semibold text-green-700 dark:text-green-400 mb-2">✅ Strengths:</div>
+                    <ul className="space-y-1">
+                      {data.contentQuality.strengths.map((strength: string, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                          <span className="text-green-500 mt-0.5">✓</span>
+                          <span>{strength}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {data.contentQuality.weaknesses && data.contentQuality.weaknesses.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                    <div className="text-xs font-semibold text-red-700 dark:text-red-400 mb-2">❌ Weaknesses:</div>
+                    <ul className="space-y-1">
+                      {data.contentQuality.weaknesses.map((weakness: string, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                          <span className="text-red-500 mt-0.5">✗</span>
+                          <span>{weakness}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 // Technical SEO Section
 function DetailedTechnicalSection({ data, isExpanded, onToggle }: any) {
   return (
@@ -829,6 +1061,365 @@ function DetailedTechnicalSection({ data, isExpanded, onToggle }: any) {
               </div>
             </div>
           )}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+
+// Validation & Quality Check Section
+function DetailedValidationSection({ data, isExpanded, onToggle }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-cyan-100 dark:border-cyan-900/50 overflow-hidden"
+    >
+      <div 
+        className="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900/30 dark:to-emerald-800/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">✅</span>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Validation & Quality Check</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Overall SEO quality assessment and compliance</p>
+            </div>
+          </div>
+          <svg 
+            className={`w-6 h-6 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="p-6 pt-0 space-y-6">
+          {/* Overall Quality Score */}
+          {data.quality && (
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-5 border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span>⭐</span> Overall Quality Assessment
+              </h4>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-4xl font-bold mb-2" style={{
+                    color: data.quality.score >= 80 ? '#10b981' : 
+                           data.quality.score >= 60 ? '#f59e0b' : '#ef4444'
+                  }}>
+                    {data.quality.score}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Quality Score</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className={`text-4xl font-bold mb-2 ${
+                    data.quality.grade === 'A' ? 'text-green-600 dark:text-green-400' :
+                    data.quality.grade === 'B' ? 'text-blue-600 dark:text-blue-400' :
+                    data.quality.grade === 'C' ? 'text-yellow-600 dark:text-yellow-400' :
+                    'text-red-600 dark:text-red-400'
+                  }`}>
+                    {data.quality.grade}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Grade</div>
+                </div>
+              </div>
+              
+              {data.quality.strengths && data.quality.strengths.length > 0 && (
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-3 border border-green-200 dark:border-green-800">
+                  <div className="text-xs font-semibold text-green-700 dark:text-green-400 mb-2">✅ Strengths:</div>
+                  <ul className="space-y-1">
+                    {data.quality.strengths.map((strength: string, idx: number) => (
+                      <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>{strength}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {data.quality.weaknesses && data.quality.weaknesses.length > 0 && (
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-200 dark:border-red-800">
+                  <div className="text-xs font-semibold text-red-700 dark:text-red-400 mb-2">❌ Weaknesses:</div>
+                  <ul className="space-y-1">
+                    {data.quality.weaknesses.map((weakness: string, idx: number) => (
+                      <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                        <span className="text-red-500 mt-0.5">✗</span>
+                        <span>{weakness}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SEO Compliance */}
+          {data.seoCompliance && (
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>🔍</span> SEO Compliance Check
+              </h4>
+              <div className="space-y-3">
+                {data.seoCompliance.critical && data.seoCompliance.critical.length > 0 && (
+                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-200 dark:border-red-800">
+                    <div className="text-xs font-semibold text-red-700 dark:text-red-400 mb-2">🚨 Critical Issues:</div>
+                    <ul className="space-y-1">
+                      {data.seoCompliance.critical.map((issue: string, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                          <span className="text-red-500 mt-0.5">•</span>
+                          <span>{issue}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {data.seoCompliance.warnings && data.seoCompliance.warnings.length > 0 && (
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border border-yellow-200 dark:border-yellow-800">
+                    <div className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-2">⚠️ Warnings:</div>
+                    <ul className="space-y-1">
+                      {data.seoCompliance.warnings.map((warning: string, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                          <span className="text-yellow-500 mt-0.5">•</span>
+                          <span>{warning}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* AI Recommendations */}
+          {data.aiRecommendations && data.aiRecommendations.length > 0 && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-5 border border-purple-200 dark:border-purple-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>✨</span> AI-Powered Recommendations ({data.aiRecommendations.length})
+              </h4>
+              <div className="space-y-3">
+                {data.aiRecommendations.map((rec: any, idx: number) => (
+                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-300 dark:border-purple-700">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="font-medium text-gray-900 dark:text-white flex-1">{rec.issue}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ml-2 ${
+                        rec.priority === 'critical' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+                        rec.priority === 'high' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' :
+                        rec.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                        'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                      }`}>
+                        {rec.priority}
+                      </span>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2 border border-green-200 dark:border-green-800">
+                      <div className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">💡 How to Fix:</div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{rec.fix}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Consistency Check */}
+          {data.consistency && data.consistency.issues && data.consistency.issues.length > 0 && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-5 border border-yellow-200 dark:border-yellow-800">
+              <h4 className="font-semibold text-yellow-700 dark:text-yellow-400 mb-3 flex items-center gap-2">
+                <span>🔄</span> Consistency Issues
+              </h4>
+              <ul className="space-y-2">
+                {data.consistency.issues.map((issue: string, idx: number) => (
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                    <span className="text-yellow-500 mt-0.5">⚠️</span>
+                    <span>{issue}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// Report Generation Section
+function DetailedReportSection({ data, isExpanded, onToggle }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-cyan-100 dark:border-cyan-900/50 overflow-hidden"
+    >
+      <div 
+        className="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/30 dark:to-rose-800/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📊</span>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">SEO Report Summary</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Complete analysis summary and recommendations</p>
+            </div>
+          </div>
+          <svg 
+            className={`w-6 h-6 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="p-6 pt-0 space-y-6">
+          {/* Report Summary */}
+          {data.summary && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-5 border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span>📋</span> Report Summary
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-3xl font-bold mb-2" style={{
+                    color: data.summary.overallScore >= 80 ? '#10b981' : 
+                           data.summary.overallScore >= 60 ? '#f59e0b' : '#ef4444'
+                  }}>
+                    {data.summary.overallScore}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Overall Score</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                    {data.summary.totalRecommendations}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Recommendations</div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                    {data.summary.criticalIssues || 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Critical Issues</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* URL & Timestamp */}
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <span>🔗</span> Report Details
+            </h4>
+            <div className="space-y-2">
+              {data.url && (
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">URL:</span>
+                  <span className="text-sm text-gray-900 dark:text-white break-all">{data.url}</span>
+                </div>
+              )}
+              {data.timestamp && (
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">Generated:</span>
+                  <span className="text-sm text-gray-900 dark:text-white">
+                    {new Date(data.timestamp).toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Key Findings */}
+          {data.keyFindings && data.keyFindings.length > 0 && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-5 border border-green-200 dark:border-green-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>🔍</span> Key Findings
+              </h4>
+              <div className="space-y-2">
+                {data.keyFindings.map((finding: string, idx: number) => (
+                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-3 flex items-start gap-2">
+                    <span className="text-green-500 mt-0.5">✓</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{finding}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Priority Actions */}
+          {data.priorityActions && data.priorityActions.length > 0 && (
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg p-5 border border-red-200 dark:border-red-800">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span>🚨</span> Priority Actions Required
+              </h4>
+              <div className="space-y-3">
+                {data.priorityActions.map((action: any, idx: number) => (
+                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-4 border-l-4 border-red-500">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="font-medium text-gray-900 dark:text-white flex-1">{action.title || action}</span>
+                      {action.priority && (
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ml-2 ${
+                          action.priority === 'critical' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+                          action.priority === 'high' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' :
+                          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                        }`}>
+                          {action.priority}
+                        </span>
+                      )}
+                    </div>
+                    {action.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Download Report Button */}
+          <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg p-5 border border-cyan-200 dark:border-cyan-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Export Full Report</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Download complete SEO analysis as PDF or JSON</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    const jsonStr = JSON.stringify(data, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `seo-report-${Date.now()}.json`;
+                    a.click();
+                  }}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  📄 JSON
+                </button>
+                <button
+                  onClick={() => alert('PDF export coming soon!')}
+                  className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  📑 PDF
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </motion.div>

@@ -18,22 +18,22 @@ function LighthouseScoreCard({ title, score, icon, description, color }: {
   color: 'blue' | 'green' | 'purple' | 'orange';
 }) {
   const scoreColor = score >= 90 ? 'text-green-600 dark:text-green-400' :
-                     score >= 50 ? 'text-orange-600 dark:text-orange-400' :
-                     'text-red-600 dark:text-red-400';
-  
+    score >= 50 ? 'text-orange-600 dark:text-orange-400' :
+      'text-red-600 dark:text-red-400';
+
   const ringColor = score >= 90 ? 'stroke-green-500' :
-                    score >= 50 ? 'stroke-orange-500' :
-                    'stroke-red-500';
-  
+    score >= 50 ? 'stroke-orange-500' :
+      'stroke-red-500';
+
   const bgColor = color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/20' :
-                  color === 'green' ? 'bg-green-50 dark:bg-green-900/20' :
-                  color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/20' :
-                  'bg-orange-50 dark:bg-orange-900/20';
-  
+    color === 'green' ? 'bg-green-50 dark:bg-green-900/20' :
+      color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/20' :
+        'bg-orange-50 dark:bg-orange-900/20';
+
   const borderColor = color === 'blue' ? 'border-blue-200 dark:border-blue-800' :
-                      color === 'green' ? 'border-green-200 dark:border-green-800' :
-                      color === 'purple' ? 'border-purple-200 dark:border-purple-800' :
-                      'border-orange-200 dark:border-orange-800';
+    color === 'green' ? 'border-green-200 dark:border-green-800' :
+      color === 'purple' ? 'border-purple-200 dark:border-purple-800' :
+        'border-orange-200 dark:border-orange-800';
 
   // Calculate stroke-dasharray for circular progress
   const circumference = 2 * Math.PI * 45; // radius = 45
@@ -126,30 +126,30 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
   const previewUrl = useMemo(() => {
     const normalizeUrl = (urlString: string | null | undefined): string | null => {
       if (!urlString) return null;
-      
+
       // Remove whitespace
       urlString = urlString.trim();
-      
+
       // If it already has protocol, return as is
       if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
         return urlString;
       }
-      
+
       // If it starts with www., add https://
       if (urlString.startsWith('www.')) {
         return `https://${urlString}`;
       }
-      
+
       // If it looks like a domain (contains .), add https://
       if (urlString.includes('.') && !urlString.includes(' ')) {
         return `https://${urlString}`;
       }
-      
+
       return urlString;
     };
 
     let extractedUrl: string | null = null;
-    
+
     if (url) {
       extractedUrl = normalizeUrl(url);
     } else {
@@ -160,7 +160,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
         if (crawlData?.url) {
           extractedUrl = normalizeUrl(crawlData.url);
         }
-        
+
         if (!extractedUrl) {
           const reportData = firstResult.report;
           if (reportData?.url) {
@@ -168,7 +168,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
           }
         }
       }
-      
+
       // Try to get URL from results keys
       if (!extractedUrl) {
         const urlKeys = Object.keys(results);
@@ -177,7 +177,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
         }
       }
     }
-    
+
     return extractedUrl;
   }, [url, results]);
 
@@ -239,9 +239,9 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
       Object.entries(agentResults).forEach(([agentId, result]) => {
         // Skip report agent as it's already processed
         if (agentId === 'report') return;
-        
+
         const formatted = result?.formatted || result;
-        
+
         if (formatted?.title) {
           const agentData = {
             id: agentId,
@@ -273,21 +273,21 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
     });
 
     // Calculate Lighthouse scores if not available from report
-    if (data.lighthouse.performance === 0 && data.lighthouse.accessibility === 0 && 
-        data.lighthouse.bestPractices === 0 && data.lighthouse.seo === 0) {
+    if (data.lighthouse.performance === 0 && data.lighthouse.accessibility === 0 &&
+      data.lighthouse.bestPractices === 0 && data.lighthouse.seo === 0) {
       // Fallback: Calculate from agent results
       data.lighthouse = calculateLighthouseScoresFromResults(results);
     }
 
     // Calculate overall score as weighted average of Lighthouse scores
     // Similar to Google Lighthouse: equal weighting (25% each) for all four categories
-    if (data.lighthouse.performance > 0 || data.lighthouse.accessibility > 0 || 
-        data.lighthouse.bestPractices > 0 || data.lighthouse.seo > 0) {
+    if (data.lighthouse.performance > 0 || data.lighthouse.accessibility > 0 ||
+      data.lighthouse.bestPractices > 0 || data.lighthouse.seo > 0) {
       const performance = data.lighthouse.performance || 0;
       const accessibility = data.lighthouse.accessibility || 0;
       const bestPractices = data.lighthouse.bestPractices || 0;
       const seo = data.lighthouse.seo || 0;
-      
+
       // Equal weighting: 25% each category
       data.overallScore = Math.round((performance + accessibility + bestPractices + seo) / 4);
     } else if (data.agents.length > 0) {
@@ -395,7 +395,7 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                 </div>
               </div>
             </div>
-            
+
             {/* Website Preview */}
             <div className="flex flex-col">
               <div className="flex items-center justify-between mb-3">
@@ -445,17 +445,18 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                         <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                           <div className="text-center p-6">
                             <div className="text-5xl mb-4">🔒</div>
-                            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Preview Unavailable</p>
+                            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                              Preview Unavailable
+                            </p>
+
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 max-w-sm">
-                              {previewError.includes('refused') || previewError.includes('Connection refused') 
-                                ? 'The website refused to connect. This usually means it blocks iframe embedding for security reasons (X-Frame-Options or Content-Security-Policy headers).'
-                                : previewError.includes('blocks iframe') || previewError.includes('X-Frame')
-                                ? 'This website blocks embedding in iframes for security reasons (X-Frame-Options or CSP headers).'
-                                : previewError}
+                              {previewError}
                             </p>
+
                             <p className="text-xs text-gray-500 dark:text-gray-500 mb-4 max-w-sm">
-                              This is a browser security feature and cannot be bypassed. Click the button below to view the website directly.
+                              Many websites block iframe embedding. This cannot be bypassed by the browser.
                             </p>
+
                             <a
                               href={previewUrl || undefined}
                               target="_blank"
@@ -472,52 +473,53 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                       ) : (
                         <>
                           <iframe
-                            key={previewUrl} // Force re-render on URL change
+                            key={previewUrl}
                             src={previewUrl || undefined}
                             className="w-full h-full border-0"
                             title="Website Preview"
-                            referrerPolicy="no-referrer-when-downgrade"
+                            sandbox="allow-scripts allow-same-origin allow-popups"
                             loading="lazy"
                             onLoad={(e) => {
                               setIsLoadingPreview(false);
+
                               const iframe = e.target as HTMLIFrameElement;
-                              console.log('🔵 [Preview] Iframe onLoad triggered:', previewUrl);
-                              
-                              // Check if iframe loaded successfully after a delay
+
+                              // Delay detection slightly to allow redirect errors
                               setTimeout(() => {
                                 try {
-                                  // Try to access iframe content (will fail if blocked by X-Frame-Options)
-                                  if (iframe.contentWindow && iframe.contentDocument) {
-                                    const body = iframe.contentDocument.body;
-                                    if (body) {
-                                      console.log('✅ [Preview] Content loaded successfully');
-                                      // Clear any previous errors
-                                      setPreviewError(null);
-                                    } else {
-                                      console.warn('⚠️ [Preview] No body element found');
-                                    }
+                                  // Attempt to check the iframe's document
+                                  const doc = iframe.contentDocument;
+
+                                  if (!doc || !doc.body) {
+                                    throw new Error("No access to iframe document");
                                   }
+
+                                  if (doc.body.innerHTML.length < 20) {
+                                    // Very small content = likely blocked or blank
+                                    throw new Error("Iframe content blocked or empty");
+                                  }
+
+                                  // If we reach here, content loaded successfully
+                                  setPreviewError(null);
                                 } catch (error) {
-                                  // Cross-origin or X-Frame-Options block - this is expected for many sites
-                                  console.warn('⚠️ [Preview] Cross-origin block (expected for many sites):', error);
-                                  // Don't set error immediately - let the browser show what it can
+                                  setPreviewError(
+                                    "This website cannot be previewed because it blocks iframe embedding (X-Frame-Options / CSP)."
+                                  );
                                 }
-                              }, 2000);
+                              }, 500);
                             }}
-                            onError={(e) => {
-                              console.error('❌ [Preview] Iframe onError:', e);
+                            onError={() => {
                               setIsLoadingPreview(false);
-                              setPreviewError('Failed to load preview - website may block iframe embedding');
-                              setShowFallbackMessage(true);
+                              setPreviewError(
+                                "Failed to load preview — the website may block iframe embedding."
+                              );
                             }}
                           />
-                          {/* Fallback: Show message after loading */}
+
                           {!isLoadingPreview && !previewError && (
-                            <div 
-                              className="absolute bottom-4 left-4 right-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-xs text-blue-800 dark:text-blue-200 z-30 pointer-events-none"
-                            >
+                            <div className="absolute bottom-4 left-4 right-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-xs text-blue-800 dark:text-blue-200 z-30 pointer-events-none">
                               <p className="font-semibold mb-1">💡 Preview Note</p>
-                              <p>If you see a blank page or error, the website blocks iframe embedding. Click "Open in new tab" above to view it directly.</p>
+                              <p>If the preview appears blank, the website might block iframes.</p>
                             </div>
                           )}
                         </>
@@ -660,11 +662,10 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
               className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all"
             >
               {/* Card Header */}
-              <div className={`p-6 ${
-                agent.status === 'good' 
-                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' 
+              <div className={`p-6 ${agent.status === 'good'
+                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
                   : 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20'
-              }`}>
+                }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center text-2xl shadow-sm">
@@ -695,9 +696,8 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
                     initial={{ width: 0 }}
                     animate={{ width: `${agent.score}%` }}
                     transition={{ duration: 1, delay: 0.2 * index }}
-                    className={`h-2 rounded-full ${
-                      agent.score >= 80 ? 'bg-green-500' : agent.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
+                    className={`h-2 rounded-full ${agent.score >= 80 ? 'bg-green-500' : agent.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
                   />
                 </div>
               </div>
@@ -801,17 +801,17 @@ export default function SEODashboard({ results, url }: SEODashboardProps) {
 // Helper function to calculate agent score
 function calculateAgentScore(formatted: any): number {
   let score = 100;
-  
+
   // Deduct points for issues
   if (formatted.issues && formatted.issues.length > 0) {
     score -= formatted.issues.length * 10;
   }
-  
+
   // Adjust based on status
   if (formatted.status === 'needs_attention') {
     score -= 20;
   }
-  
+
   // Ensure score is between 0 and 100
   return Math.max(0, Math.min(100, score));
 }
@@ -833,14 +833,14 @@ function calculateLighthouseScoresFromResults(results: Record<string, Record<str
     // Technical SEO affects Performance, Accessibility, Best Practices
     if (agentResults.technical) {
       const tech = agentResults.technical.formatted || agentResults.technical;
-      
+
       // Performance
       if (!tech.mobile?.hasViewport) performance -= 10;
       if (!tech.security?.isHTTPS) {
         performance -= 10;
         bestPractices -= 20;
       }
-      
+
       // Accessibility
       if (tech.accessibility?.imagesWithoutAlt > 0) {
         accessibility -= Math.min(20, tech.accessibility.imagesWithoutAlt * 5);
@@ -866,8 +866,8 @@ function calculateLighthouseScoresFromResults(results: Record<string, Record<str
     if (agentResults.meta) {
       const meta = agentResults.meta.formatted || agentResults.meta;
       if (meta.title?.length && (meta.title.length < 30 || meta.title.length > 60)) seo -= 5;
-      if (meta.metaDescription?.length && 
-          (meta.metaDescription.length < 120 || meta.metaDescription.length > 160)) seo -= 5;
+      if (meta.metaDescription?.length &&
+        (meta.metaDescription.length < 120 || meta.metaDescription.length > 160)) seo -= 5;
     }
 
     if (agentResults.schema) {
