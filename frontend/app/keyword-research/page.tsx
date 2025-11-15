@@ -7,8 +7,9 @@ import { API_URL } from '../lib/constants';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import YouTubeModal from '../components/YouTubeModal';
+import ProtectedRoute from '../components/ProtectedRoute';
 
-export default function KeywordResearch() {
+function KeywordResearchContent() {
   const [keywords, setKeywords] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
@@ -422,5 +423,13 @@ export default function KeywordResearch() {
         videoUrl={youtubeUrl}
       />
     </div>
+  );
+}
+
+export default function KeywordResearch() {
+  return (
+    <ProtectedRoute>
+      <KeywordResearchContent />
+    </ProtectedRoute>
   );
 }

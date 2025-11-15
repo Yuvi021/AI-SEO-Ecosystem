@@ -57,28 +57,43 @@ The server will run on `http://localhost:3001`
 
 ## 🤖 AI-Powered Agents
 
-When `OPENROUTER_API_KEY` is configured, agents provide:
+When `OPENROUTER_API_KEY` is configured, these 9 agents are available end‑to‑end:
+
+### CrawlAgent
+- Extracts HTML, metadata, headings, links, canonical tags, and basic on‑page signals
+- Supports single URL and sitemap crawling with depth control
 
 ### KeywordIntelligenceAgent
-- **AI Features**: Semantic keyword analysis, search intent detection, competitive keywords, keyword gaps
+- Semantic keyword analysis, search intent detection, competitive keyword suggestions, keyword gaps
+- Can integrate real‑time providers (DataForSEO/SEMrush/SerpAPI/ValueSERP) if configured
 
 ### ContentOptimizationAgent
-- **AI Features**: Content quality assessment, readability improvements, engagement tips, content gaps
-
-### MetaTagAgent
-- **AI Features**: AI-generated optimized titles and descriptions for maximum CTR
+- Readability analysis, structure recommendations, keyword placement suggestions, content quality scoring
+- Produces actionable edits and outline improvements
 
 ### SchemaAgent
-- **AI Features**: Intelligent schema generation based on content type
-
-### ImageIntelligenceAgent
-- **AI Features**: Context-aware alt text generation
-
-### ValidationAgent
-- **AI Features**: Comprehensive quality validation with AI insights
+- Generates valid JSON‑LD based on page/content type; ensures Schema.org compliance
+- Suggests additional properties for rich results
 
 ### TechnicalSEOAgent
-- **AI Features**: Advanced technical recommendations
+- Core Web Vitals and performance checks using Lighthouse scoring helpers
+- Flags canonical, robots, sitemap, indexing, and resource issues
+
+### MetaTagAgent
+- Produces optimized titles and meta descriptions (length‑aware, intent‑aligned)
+- Suggests Open Graph/Twitter tags for better sharing previews
+
+### ImageIntelligenceAgent
+- Context‑aware alt text suggestions, filename/size hints, and lazy‑loading opportunities
+- Accessibility‑focused recommendations
+
+### ValidationAgent
+- Final QA pass: duplication, thin content, missing essentials, and SEO compliance checks
+- Summarizes pass/fail and risk areas
+
+### ReportAgent
+- Aggregates all agent outputs into a comprehensive HTML/JSON report
+- Optionally uploads artifacts to Cloudinary when configured
 
 ## 📁 Structure
 
