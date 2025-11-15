@@ -9,6 +9,7 @@ import SEODashboard from '../components/SEODashboard';
 import Link from 'next/link';
 import Image from 'next/image';
 import ThemeToggle from '../components/ThemeToggle';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 interface ResultItem {
   url: string;
@@ -23,8 +24,8 @@ interface ResultsResponse {
   url?: string;
 }
 
-export default function ResultsPage() {
-  const { isAuthenticated, token } = useAuth();
+function ResultsPageContent() {
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [allUrls, setAllUrls] = useState<string[]>([]); // List of all URLs from initial call
@@ -39,14 +40,8 @@ export default function ResultsPage() {
   const [expandedUrls, setExpandedUrls] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setError('Please login to view results');
-      setLoading(false);
-      return;
-    }
-
     fetchResults();
-  }, [isAuthenticated, token]);
+  }, [token]);
 
   // Initial call: Get all URLs (without url parameter)
   const fetchResults = async () => {
@@ -358,23 +353,6 @@ export default function ResultsPage() {
       minute: '2-digit',
     }).format(date);
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20 flex items-center justify-center p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Please login to view your results</p>
-          <Link
-            href="/login"
-            className="px-6 py-3 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-          >
-            Go to Login
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -744,6 +722,14 @@ export default function ResultsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <ProtectedRoute>
+      <ResultsPageContent />
+    </ProtectedRoute>
   );
 }
 

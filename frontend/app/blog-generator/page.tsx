@@ -7,8 +7,9 @@ import remarkGfm from 'remark-gfm';
 import { API_URL } from '../lib/constants';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import ProtectedRoute from '../components/ProtectedRoute';
 
-export default function BlogGenerator() {
+function BlogGeneratorContent() {
   const [topic, setTopic] = useState('');
   const [keywords, setKeywords] = useState('');
   const [targetLength, setTargetLength] = useState(1500);
@@ -650,5 +651,13 @@ export default function BlogGenerator() {
       {/* Footer */}
       <Footer />
     </div>
+  );
+}
+
+export default function BlogGenerator() {
+  return (
+    <ProtectedRoute>
+      <BlogGeneratorContent />
+    </ProtectedRoute>
   );
 }
