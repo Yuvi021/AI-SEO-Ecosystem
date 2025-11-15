@@ -9,6 +9,7 @@ import { useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import YouTubeModal from './components/YouTubeModal';
+import HomeSchema from './components/HomeSchema';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -198,6 +199,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white  dark:bg-gray-900 transition-colors duration-300">
+      {/* JSON-LD Schema */}
+      <HomeSchema />
+      
       {/* Navigation */}
       <Header />
 

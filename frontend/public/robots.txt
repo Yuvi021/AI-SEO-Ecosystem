@@ -1,0 +1,19 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and private pages
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://ai-seo-ecosystem.com/sitemap.xml
+
+# Crawl-delay for specific bots (optional)
+User-agent: Googlebot
+Crawl-delay: 0
+
+User-agent: Bingbot
+Crawl-delay: 0

@@ -1,0 +1,21 @@
+{
+  "name": "AI SEO Ecosystem - Multi-Agent SEO Analysis Platform",
+  "short_name": "AI SEO",
+  "description": "Harness the power of 9 specialized AI agents to analyze websites, optimize content, and deliver actionable SEO insights in real-time.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0891b2",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr"
+}
