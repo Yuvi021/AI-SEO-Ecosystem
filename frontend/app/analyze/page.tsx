@@ -653,7 +653,7 @@ function AnalyzePageContent() {
             transition={{ duration: 0.6 }}
           >
             {viewMode === 'dashboard' ? (
-              <SEODashboard results={results} url={url} />
+              <SEODashboard results={results} url={url} progress={progress} />
             ) : viewMode === 'combined' ? (
               <DetailedDataSections results={results} />
             ) : (
