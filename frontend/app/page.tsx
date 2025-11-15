@@ -197,7 +197,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white  dark:bg-gray-900 transition-colors duration-300">
       {/* Navigation */}
       <Header />
 
@@ -205,45 +205,45 @@ export default function Home() {
       <section className="relative py-20 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-blue-950/30 dark:to-indigo-950/20 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div 
+          <motion.div
             className="absolute w-96 h-96 bg-cyan-400/10 dark:bg-cyan-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
-            animate={{ 
+            animate={{
               x: [0, 50, 0],
               y: [0, -50, 0],
               scale: [1, 1.2, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 20,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
-            style={{ left: '10%', top: '20%' }}
+            style={{ left: "10%", top: "20%" }}
           />
-          <motion.div 
+          <motion.div
             className="absolute w-96 h-96 bg-blue-500/10 dark:bg-blue-600/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl"
-            animate={{ 
+            animate={{
               x: [0, -50, 0],
               y: [0, 50, 0],
               scale: [1, 1.1, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 20,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: 2
+              delay: 2,
             }}
-            style={{ right: '10%', bottom: '20%' }}
+            style={{ right: "10%", bottom: "20%" }}
           />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div 
+          <motion.div
             className="text-center"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.div 
+            <motion.div
               className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-full border border-cyan-200 dark:border-cyan-800"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -253,7 +253,7 @@ export default function Home() {
                 🤖 AI-Powered SEO Analysis Platform
               </span>
             </motion.div>
-            <motion.h1 
+            <motion.h1
               className="text-5xl md:text-7xl font-extrabold mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -263,18 +263,24 @@ export default function Home() {
                 Intelligent SEO
               </span>
               <br />
-              <span className="text-gray-900 dark:text-white">Analysis Platform</span>
+              <span className="text-gray-900 dark:text-white">
+                Analysis Platform
+              </span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              Harness the power of <span className="font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">9 specialized AI agents</span> working in harmony to analyze websites,
-              optimize content, and deliver actionable SEO insights in real-time.
+              Harness the power of{" "}
+              <span className="font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">
+                9 specialized AI agents
+              </span>{" "}
+              working in harmony to analyze websites, optimize content, and
+              deliver actionable SEO insights in real-time.
             </motion.p>
-            <motion.div 
+            <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -289,23 +295,28 @@ export default function Home() {
                   className="px-8 py-4 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 text-white rounded-xl font-semibold text-lg hover:shadow-2xl transition-all flex items-center gap-2"
                 >
                   Start Analyzing
-                  <motion.svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <motion.svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                     animate={{ x: [0, 5, 0] }}
-                    transition={{ 
+                    transition={{
                       duration: 1.5,
                       repeat: Infinity,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
                   </motion.svg>
                 </Link>
               </motion.div>
-              <motion.button 
+              <motion.button
                 onClick={() => setIsVideoModalOpen(true)}
                 className="px-8 py-4 bg-white dark:bg-gray-800 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 rounded-xl font-semibold text-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all"
                 whileHover={{ scale: 1.05 }}
@@ -317,16 +328,31 @@ export default function Home() {
           </motion.div>
 
           {/* Stats */}
-          <motion.div 
+          <motion.div
             className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.6 }}
           >
             {[
-              { number: '9', label: 'AI Agents', icon: '🤖', description: 'Specialized agents working in harmony' },
-              { number: '100%', label: 'Real-Time', icon: '⚡', description: 'Live progress tracking and updates' },
-              { number: '∞', label: 'Unlimited', icon: '🚀', description: 'Analyze as many sites as you need' },
+              {
+                number: "9",
+                label: "AI Agents",
+                icon: "🤖",
+                description: "Specialized agents working in harmony",
+              },
+              {
+                number: "100%",
+                label: "Real-Time",
+                icon: "⚡",
+                description: "Live progress tracking and updates",
+              },
+              {
+                number: "∞",
+                label: "Unlimited",
+                icon: "🚀",
+                description: "Analyze as many sites as you need",
+              },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -336,7 +362,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + index * 0.1 }}
               >
-                <motion.div 
+                <motion.div
                   className="text-5xl mb-4"
                   whileHover={{ scale: 1.2, rotate: 10 }}
                   transition={{ type: "spring", stiffness: 400 }}
@@ -346,8 +372,12 @@ export default function Home() {
                 <div className="text-6xl font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent mb-2">
                   {stat.number}
                 </div>
-                <div className="text-xl font-semibold text-gray-900 dark:text-white mb-1">{stat.label}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{stat.description}</div>
+                <div className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+                  {stat.label}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {stat.description}
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -357,7 +387,7 @@ export default function Home() {
       {/* Features Section - Detailed Agent Descriptions */}
       <section className="py-20 bg-white dark:bg-gray-900 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -365,10 +395,15 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-              Powerful <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">AI Agents</span>
+              Powerful{" "}
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                AI Agents
+              </span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Our 9 specialized AI agents work in parallel to provide comprehensive, real-time SEO analysis. Each agent focuses on a specific aspect of SEO, ensuring nothing is missed.
+              Our 9 specialized AI agents work in parallel to provide
+              comprehensive, real-time SEO analysis. Each agent focuses on a
+              specific aspect of SEO, ensuring nothing is missed.
             </p>
           </motion.div>
 
@@ -383,14 +418,24 @@ export default function Home() {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 whileHover={{ scale: 1.02, y: -5 }}
               >
-                <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-3xl mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                <div
+                  className={`w-16 h-16 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-3xl mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                >
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
-                <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400 mb-3">{feature.description}</p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">{feature.details}</p>
+                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                  {feature.title}
+                </h3>
+                <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400 mb-3">
+                  {feature.description}
+                </p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                  {feature.details}
+                </p>
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">What It Checks:</p>
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                    What It Checks:
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {feature.checks.map((check, idx) => (
                       <span
@@ -411,7 +456,7 @@ export default function Home() {
       {/* How Agents Work Together */}
       <section className="py-20 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-gray-800 dark:via-blue-950/30 dark:to-indigo-950/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -419,10 +464,15 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-              How Our <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">Agents Work Together</span>
+              How Our{" "}
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                Agents Work Together
+              </span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Our AI agents operate in a coordinated workflow, sharing insights and building upon each other's findings to deliver comprehensive analysis.
+              Our AI agents operate in a coordinated workflow, sharing insights
+              and building upon each other's findings to deliver comprehensive
+              analysis.
             </p>
           </motion.div>
 
@@ -430,10 +480,26 @@ export default function Home() {
             {/* Workflow Visualization */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
               {[
-                { phase: 'Discovery', agents: ['Crawl Agent'], gradient: 'from-cyan-500 to-cyan-700' },
-                { phase: 'Analysis', agents: ['Keyword', 'Content', 'Technical'], gradient: 'from-blue-500 to-blue-700' },
-                { phase: 'Optimization', agents: ['Meta Tags', 'Schema', 'Image'], gradient: 'from-purple-500 to-purple-700' },
-                { phase: 'Reporting', agents: ['Validation', 'Report'], gradient: 'from-indigo-500 to-indigo-700' },
+                {
+                  phase: "Discovery",
+                  agents: ["Crawl Agent"],
+                  gradient: "from-cyan-500 to-cyan-700",
+                },
+                {
+                  phase: "Analysis",
+                  agents: ["Keyword", "Content", "Technical"],
+                  gradient: "from-blue-500 to-blue-700",
+                },
+                {
+                  phase: "Optimization",
+                  agents: ["Meta Tags", "Schema", "Image"],
+                  gradient: "from-purple-500 to-purple-700",
+                },
+                {
+                  phase: "Reporting",
+                  agents: ["Validation", "Report"],
+                  gradient: "from-indigo-500 to-indigo-700",
+                },
               ].map((phase, index) => (
                 <motion.div
                   key={index}
@@ -443,9 +509,15 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.2, duration: 0.5 }}
                 >
-                  <div className={`bg-gradient-to-br ${phase.gradient} p-6 rounded-2xl shadow-lg text-white`}>
-                    <div className="text-3xl mb-3 font-bold">Phase {index + 1}</div>
-                    <h3 className="text-xl font-semibold mb-4">{phase.phase}</h3>
+                  <div
+                    className={`bg-gradient-to-br ${phase.gradient} p-6 rounded-2xl shadow-lg text-white`}
+                  >
+                    <div className="text-3xl mb-3 font-bold">
+                      Phase {index + 1}
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4">
+                      {phase.phase}
+                    </h3>
                     <ul className="space-y-2 text-sm">
                       {phase.agents.map((agent, idx) => (
                         <li key={idx} className="flex items-center gap-2">
@@ -463,13 +535,18 @@ export default function Home() {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                         animate={{ x: [0, 5, 0] }}
-                        transition={{ 
+                        transition={{
                           duration: 2,
                           repeat: Infinity,
-                          delay: index * 0.3
+                          delay: index * 0.3,
                         }}
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
                       </motion.svg>
                     </div>
                   )}
@@ -486,27 +563,31 @@ export default function Home() {
                 {[
                   {
                     step: 1,
-                    title: 'Crawl & Discovery',
-                    description: 'The Crawl Agent starts by extracting all HTML content, metadata, headings, and links. This foundational data is shared with all other agents.',
-                    icon: '🕷️',
+                    title: "Crawl & Discovery",
+                    description:
+                      "The Crawl Agent starts by extracting all HTML content, metadata, headings, and links. This foundational data is shared with all other agents.",
+                    icon: "🕷️",
                   },
                   {
                     step: 2,
-                    title: 'Parallel Analysis',
-                    description: 'Keyword, Content, and Technical agents analyze simultaneously, each focusing on their domain while sharing relevant findings.',
-                    icon: '⚡',
+                    title: "Parallel Analysis",
+                    description:
+                      "Keyword, Content, and Technical agents analyze simultaneously, each focusing on their domain while sharing relevant findings.",
+                    icon: "⚡",
                   },
                   {
                     step: 3,
-                    title: 'Optimization Suggestions',
-                    description: 'Meta Tags, Schema, and Image agents generate optimization recommendations based on the analysis from previous agents.',
-                    icon: '✨',
+                    title: "Optimization Suggestions",
+                    description:
+                      "Meta Tags, Schema, and Image agents generate optimization recommendations based on the analysis from previous agents.",
+                    icon: "✨",
                   },
                   {
                     step: 4,
-                    title: 'Validation & Reporting',
-                    description: 'The Validation agent cross-checks all findings, and the Report agent compiles everything into comprehensive, actionable reports.',
-                    icon: '📊',
+                    title: "Validation & Reporting",
+                    description:
+                      "The Validation agent cross-checks all findings, and the Report agent compiles everything into comprehensive, actionable reports.",
+                    icon: "📊",
                   },
                 ].map((workflow, index) => (
                   <motion.div
@@ -523,9 +604,13 @@ export default function Home() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-2xl">{workflow.icon}</span>
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{workflow.title}</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {workflow.title}
+                        </h4>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300">{workflow.description}</p>
+                      <p className="text-gray-600 dark:text-gray-300">
+                        {workflow.description}
+                      </p>
                     </div>
                   </motion.div>
                 ))}
@@ -538,7 +623,7 @@ export default function Home() {
       {/* How It Works */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -546,7 +631,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-              How It <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">Works</span>
+              How It{" "}
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                Works
+              </span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Simple, fast, and powerful SEO analysis in three easy steps
@@ -556,25 +644,28 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                step: '01',
-                title: 'Enter URL',
-                description: 'Provide a website URL or sitemap URL to analyze. Our system automatically detects and parses sitemaps for comprehensive site-wide analysis.',
-                icon: '🔗',
-                gradient: 'from-cyan-500 to-blue-600',
+                step: "01",
+                title: "Enter URL",
+                description:
+                  "Provide a website URL or sitemap URL to analyze. Our system automatically detects and parses sitemaps for comprehensive site-wide analysis.",
+                icon: "🔗",
+                gradient: "from-cyan-500 to-blue-600",
               },
               {
-                step: '02',
-                title: 'Select AI Agents',
-                description: 'Choose which AI agents to run for your analysis. Select all for comprehensive analysis or pick specific agents for targeted insights.',
-                icon: '🤖',
-                gradient: 'from-blue-500 to-purple-600',
+                step: "02",
+                title: "Select AI Agents",
+                description:
+                  "Choose which AI agents to run for your analysis. Select all for comprehensive analysis or pick specific agents for targeted insights.",
+                icon: "🤖",
+                gradient: "from-blue-500 to-purple-600",
               },
               {
-                step: '03',
-                title: 'Get Results',
-                description: 'Watch real-time progress as agents work in parallel. Receive detailed insights, actionable recommendations, and comprehensive reports.',
-                icon: '📊',
-                gradient: 'from-purple-500 to-pink-600',
+                step: "03",
+                title: "Get Results",
+                description:
+                  "Watch real-time progress as agents work in parallel. Receive detailed insights, actionable recommendations, and comprehensive reports.",
+                icon: "📊",
+                gradient: "from-purple-500 to-pink-600",
               },
             ].map((step, index) => (
               <motion.div
@@ -586,33 +677,36 @@ export default function Home() {
                 transition={{ delay: index * 0.2, duration: 0.5 }}
                 whileHover={{ scale: 1.05, y: -5 }}
               >
-                <motion.div 
+                <motion.div
                   className={`absolute -top-4 -left-4 w-16 h-16 bg-gradient-to-br ${step.gradient} rounded-full flex items-center justify-center text-xl font-bold text-white shadow-lg`}
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
                   {step.step}
                 </motion.div>
-                <motion.div 
+                <motion.div
                   className="text-5xl mb-4"
                   whileHover={{ scale: 1.2, rotate: 10 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
                   {step.icon}
                 </motion.div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{step.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{step.description}</p>
+                <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
+                  {step.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {step.description}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-
       {/* Benefits Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -620,7 +714,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-              Why Choose <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">Our Platform</span>
+              Why Choose{" "}
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                Our Platform
+              </span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Everything you need for comprehensive AI-powered SEO analysis
@@ -638,27 +735,29 @@ export default function Home() {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 whileHover={{ scale: 1.05, y: -5 }}
               >
-                <motion.div 
+                <motion.div
                   className="text-5xl mb-4"
                   whileHover={{ scale: 1.2, rotate: 10 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
                   {benefit.icon}
                 </motion.div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{benefit.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{benefit.description}</p>
+                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                  {benefit.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  {benefit.description}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-
-
       {/* FAQ Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -666,7 +765,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-              Frequently Asked <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">Questions</span>
+              Frequently Asked{" "}
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-400 dark:via-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                Questions
+              </span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Everything you need to know about our platform
@@ -687,8 +789,10 @@ export default function Home() {
                   onClick={() => toggleFaq(index)}
                   className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20 transition-colors"
                 >
-                  <span className="font-bold text-gray-900 dark:text-white pr-4">{faq.question}</span>
-                  <motion.span 
+                  <span className="font-bold text-gray-900 dark:text-white pr-4">
+                    {faq.question}
+                  </span>
+                  <motion.span
                     className="text-cyan-600 dark:text-cyan-400 text-2xl font-bold flex-shrink-0"
                     animate={{ rotate: openFaq === index ? 45 : 0 }}
                     transition={{ duration: 0.2 }}
@@ -697,10 +801,10 @@ export default function Home() {
                   </motion.span>
                 </button>
                 {openFaq === index && (
-                  <motion.div 
+                  <motion.div
                     className="px-6 py-4 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700"
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
                   >
@@ -717,14 +821,14 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 dark:from-cyan-600 dark:via-blue-700 dark:to-purple-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <motion.div 
+          <motion.div
             className="p-12 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-white/20"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -733,14 +837,15 @@ export default function Home() {
             >
               Ready to Improve Your SEO?
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 dark:text-gray-300 mb-8"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              Start analyzing your website today and get AI-powered actionable insights from 9 specialized agents
+              Start analyzing your website today and get AI-powered actionable
+              insights from 9 specialized agents
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -766,7 +871,7 @@ export default function Home() {
 
       {/* Footer */}
       <Footer />
-      
+
       {/* YouTube Video Modal */}
       <YouTubeModal
         isOpen={isVideoModalOpen}
