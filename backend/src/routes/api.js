@@ -56,15 +56,12 @@ export function apiRoutes(agentManager) {
   // Get results for a given URL (version-wise) for current user
   router.get('/results', requireAuth, async (req, res) => {
     try {
-      const { url, order } = req.query;
+      const { url, order, version } = req.query;
       const userId = req.user?.sub;
       const sortOrder = order === 'desc' ? -1 : 1; // default ascending v1..vn
-      const items = await listResultsByUrl(userId, url, sortOrder);
-      const payload = { userId, results: items };
-      if (url) {
-        payload.url = url;
-      }
-      return res.status(200).json(payload);
+      const versionNum = typeof version !== 'undefined' ? Number(version) : null;
+      const items = await listResultsByUrl(userId, url, sortOrder, versionNum);
+      return res.status(200).json({ userId, results: items });
     } catch (e) {
       return res.status(500).json({ error: e?.message || 'Failed to fetch results' });
     }
